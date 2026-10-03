@@ -1,84 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import type { ClinicalFactors } from "@/lib/clinicalFactors";
+import { processPatient } from "@/lib/api/processPatient";
 import type { PatientCase } from "@/lib/types";
-import { mockExtractSymptoms } from "@/lib/mockExtractor";
-import {
-  isTranslatorLoaded,
-  loadTranslator,
-  translateSwahiliToEnglish,
-} from "@/lib/translator";
-import { CaseSummary } from "./CaseSummary";
-import { ExtractionReview } from "./ExtractionReview";
-import { FollowUpQuestion } from "./FollowUpQuestion";
+import { ClinicalFactorsCard } from "./ClinicalFactorsCard";
 
 export function IntakeForm() {
   const [language, setLanguage] = useState<PatientCase["language"]>("en");
   const [age, setAge] = useState("");
   const [description, setDescription] = useState("");
-  const [patientCase, setPatientCase] = useState<PatientCase | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [translation, setTranslation] = useState("");
-  const [translationStatus, setTranslationStatus] = useState<
-    "idle" | "loading" | "translating" | "complete" | "failed"
-  >("idle");
-  const [translationError, setTranslationError] = useState("");
+  const [clinicalFactors, setClinicalFactors] = useState<ClinicalFactors | null>(null);
+  const [processStatus, setProcessStatus] = useState<"idle" | "processing" | "complete" | "failed">("idle");
+  const [processError, setProcessError] = useState("");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsAnalyzing(true);
-    setPatientCase(null);
-    const result = await mockExtractSymptoms({ age, language, description });
-    setPatientCase(result);
-    setIsAnalyzing(false);
+    await handleProcess();
   }
 
-  async function handleTranslation() {
+  async function handleProcess() {
     const text = description.trim();
-
-    if (!text || language !== "sw") {
+    if (!text) {
       return;
     }
 
+    setProcessStatus("processing");
+    setProcessError("");
     setTranslation("");
-    setTranslationError("");
+    setClinicalFactors(null);
 
     try {
-      if (!isTranslatorLoaded()) {
-        setTranslationStatus("loading");
-        await loadTranslator();
-      }
-
-      setTranslationStatus("translating");
-      const result = await translateSwahiliToEnglish(text);
-      setTranslation(result);
-      setTranslationStatus("complete");
+      const result = await processPatient(text, language);
+      setTranslation(result.translated_text ?? "");
+      setClinicalFactors(result.clinical_factors);
+      setProcessStatus("complete");
     } catch (error) {
-      setTranslationStatus("failed");
-      setTranslationError(
+      setProcessStatus("failed");
+      setProcessError(
         error instanceof Error
           ? error.message
-          : "Translation failed. Please try again.",
+          : "Local AI service failed to process this input.",
       );
     }
   }
-
-  function handleLethargyAnswer(answer: boolean) {
-    setPatientCase((current) =>
-      current
-        ? {
-            ...current,
-            symptoms: { ...current.symptoms, lethargy: answer },
-            missing_fields: current.missing_fields.filter((field) => field !== "lethargy"),
-          }
-        : current,
-    );
-  }
-
-  const needsFollowUp =
-    patientCase !== null &&
-    (patientCase.symptoms.lethargy === null ||
-      patientCase.missing_fields.includes("lethargy"));
 
   return (
     <div className="space-y-6">
@@ -106,44 +72,26 @@ export function IntakeForm() {
               placeholder="My child is 2 years old, has had a fever since yesterday, and cannot drink."
               className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-base leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
             />
-            {language === "sw" && (
+            {language === "sw" && translation && (
               <div className="mt-3">
-                <button
-                  type="button"
-                  onClick={handleTranslation}
-                  disabled={
-                    !description.trim() ||
-                    translationStatus === "loading" ||
-                    translationStatus === "translating"
-                  }
-                  className="rounded-xl border border-teal-700 bg-white px-4 py-2.5 text-sm font-bold text-teal-800 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
-                >
-                  {translationStatus === "loading"
-                    ? "Loading model..."
-                    : translationStatus === "translating"
-                      ? "Translating..."
-                      : "Translate to English"}
-                </button>
-                {translationStatus === "failed" && (
-                  <p role="alert" className="mt-2 text-sm font-medium text-red-700">
-                    {translationError}
-                  </p>
-                )}
-                {translationStatus === "complete" && translation && (
-                  <div className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
-                      English Translation
-                    </p>
-                    <p className="mt-2 text-base leading-7 text-slate-800">
-                      {translation}
-                    </p>
-                    <p className="mt-2 text-xs font-medium text-teal-700">
-                      Translation complete
-                    </p>
-                  </div>
-                )}
+                <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">English Translation</p>
+                  <p className="mt-2 text-base leading-7 text-slate-800">{translation}</p>
+                </div>
               </div>
             )}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={handleProcess}
+                disabled={!description.trim() || processStatus === "processing"}
+                className="rounded-xl border border-indigo-700 bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-400"
+              >
+                {processStatus === "processing" ? "Processing locally..." : "Process Locally"}
+              </button>
+              {processStatus === "complete" && <p className="mt-2 text-sm font-medium text-emerald-700">Processing complete</p>}
+              {processStatus === "failed" && <p role="alert" className="mt-2 text-sm font-medium text-red-700">{processError}</p>}
+            </div>
           </label>
           <div className="space-y-5">
             <label className="block">
@@ -179,18 +127,16 @@ export function IntakeForm() {
         <div className="mt-6 flex items-center justify-end border-t border-slate-100 pt-5">
           <button
             type="submit"
-            disabled={isAnalyzing}
+          disabled={processStatus === "processing"}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-wait disabled:bg-teal-500 sm:w-auto"
           >
-            {isAnalyzing && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
-            {isAnalyzing ? "Analyzing symptoms..." : "Analyze Symptoms"}
+            {processStatus === "processing" && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+            {processStatus === "processing" ? "Processing locally..." : "Analyze Symptoms"}
           </button>
         </div>
       </form>
 
-      {patientCase && <ExtractionReview patientCase={patientCase} />}
-      {needsFollowUp && <FollowUpQuestion onAnswer={handleLethargyAnswer} />}
-      {patientCase && !needsFollowUp && <CaseSummary patientCase={patientCase} />}
+      {clinicalFactors && <ClinicalFactorsCard factors={clinicalFactors} />}
     </div>
   );
 }

@@ -1,0 +1,8 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+pydantic>=2.7,<3
+huggingface-hub>=0.25,<1
+transformers>=4.45,<5
+torch>=2.2,<3
+sentencepiece>=0.2,<1
+llama-cpp-python>=0.3,<1

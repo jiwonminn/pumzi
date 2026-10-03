@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# local AI models
+/backend/models/
+
 # production
 /build
 

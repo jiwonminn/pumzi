@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pumzi
 
-## Getting Started
+Pumzi is an offline-first pediatric clinic intake tool. The Next.js frontend
+communicates with a local FastAPI backend for Swahili-to-English translation and
+clinical-factor extraction.
 
-First, run the development server:
+## Requirements
+
+- Node.js 20 or newer
+- Python 3.13 or newer
+- Several gigabytes of disk space for the local AI models
+
+## Setup
+
+Clone the repository and enter the project directory:
+
+```bash
+cd /Users/ammarfaisal/Desktop/pumzi
+```
+
+### 1. Install frontend dependencies
+
+```bash
+npm install
+```
+
+### 2. Create the Python environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+On later runs, activate the existing environment:
+
+```bash
+source .venv/bin/activate
+```
+
+### 3. Download the local models
+
+Run this once:
+
+```bash
+python backend/setup_models.py
+```
+
+The setup script downloads:
+
+- `facebook/nllb-200-distilled-600M` to
+  `backend/models/huggingface/nllb-200-distilled-600M`
+- `qwen2.5-1.5b-instruct-q4_k_m.gguf` to
+  `backend/models/qwen`
+
+The model files are ignored by Git and are not downloaded during normal
+application runtime.
+
+## Run the application
+
+Start the backend in one terminal:
+
+```bash
+source .venv/bin/activate
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+Verify the backend:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+Start the frontend in a second terminal:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Test the workflow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+For English, select **English** and enter:
 
-## Learn More
+```text
+My child is two years old, has a fever, and cannot drink.
+```
 
-To learn more about Next.js, take a look at the following resources:
+For Swahili, select **Swahili** and enter:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+Mtoto wangu ana miaka miwili. Ana homa na hawezi kunywa tangu jana.
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The Swahili workflow runs locally as:
 
-## Deploy on Vercel
+```text
+Swahili → NLLB translation → English → clinical-factor extraction
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The first request can take longer while the models load into memory. Later
+requests reuse the loaded models.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Offline behavior
+
+After model setup completes, inference runs through the local FastAPI process.
+The application does not use OpenAI, Ollama, or cloud inference APIs.
+
+See [backend/README.md](backend/README.md) for backend-specific details.
