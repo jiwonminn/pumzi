@@ -7,15 +7,16 @@ clinical-factor extraction.
 ## Requirements
 
 - Node.js 20 or newer
-- Python 3.13 or newer
+- Python 3.11 or newer
 - Several gigabytes of disk space for the local AI models
 
-## Setup
+## Setup on macOS/Linux
 
-Clone the repository and enter the project directory:
+Clone the repository and enter its directory:
 
 ```bash
-cd /Users/ammarfaisal/Desktop/pumzi
+git clone <repository-url>
+cd pumzi
 ```
 
 ### 1. Install frontend dependencies
@@ -46,6 +47,42 @@ Run this once:
 python backend/setup_models.py
 ```
 
+## Setup on Windows
+
+Open PowerShell, clone the repository, and enter its directory:
+
+```powershell
+git clone <repository-url>
+cd pumzi
+```
+
+### 1. Install frontend dependencies
+
+```powershell
+npm install
+```
+
+### 2. Create the Python environment
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r backend\requirements.txt
+```
+
+If PowerShell blocks activation scripts, run PowerShell as your user and then
+retry:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+### 3. Download the local models
+
+```powershell
+python backend\setup_models.py
+```
+
 The setup script downloads:
 
 - `facebook/nllb-200-distilled-600M` to
@@ -57,6 +94,8 @@ The model files are ignored by Git and are not downloaded during normal
 application runtime.
 
 ## Run the application
+
+### macOS/Linux
 
 Start the backend in one terminal:
 
@@ -80,6 +119,21 @@ Expected response:
 Start the frontend in a second terminal:
 
 ```bash
+npm run dev
+```
+
+### Windows PowerShell
+
+Start the backend in one PowerShell window:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+In a second PowerShell window, start the frontend:
+
+```powershell
 npm run dev
 ```
 

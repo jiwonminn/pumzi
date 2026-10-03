@@ -6,17 +6,38 @@ cloud service.
 
 ## Setup
 
+### macOS/Linux
+
 ```bash
-cd /Users/ammarfaisal/Desktop/pumzi
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
+```
+
+### Windows PowerShell
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r backend\requirements.txt
+```
+
+If PowerShell blocks activation scripts:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
 
 Download both models once before running offline:
 
 ```bash
 python backend/setup_models.py
+```
+
+On Windows PowerShell, use:
+
+```powershell
+python backend\setup_models.py
 ```
 
 The script creates the model directories, skips files that already exist, and
@@ -31,7 +52,15 @@ runtime. Runtime loading uses local files only.
 
 ## Run
 
+### macOS/Linux
+
 ```bash
+python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
+```
+
+### Windows PowerShell
+
+```powershell
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000
 ```
 
