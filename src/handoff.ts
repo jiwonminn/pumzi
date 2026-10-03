@@ -246,6 +246,11 @@ export function present(
     matchedServices: packet.facility?.matched_services ?? [],
     questions: packet.decision.follow_up_questions.map((item) => item.question),
     citations: packet.decision.citations,
+    notes: packet.decision.notes.filter((note) => note !== ACTIONS[packet.decision.decision]),
+    soFar:
+      packet.decision.level_so_far && packet.decision.level_so_far !== packet.decision.decision
+        ? TITLES[packet.decision.level_so_far]
+        : null,
     caregiverLine: packet.language === "sw" ? spoken : null,
     passport,
     smsBody: smsBody(spoken, packet.language, passport.passport_id),
@@ -263,5 +268,6 @@ export function toStored(model: ResultModel): StoredEncounter {
     sms_body: model.smsBody,
     sms_status: "queued",
     caregiver_phone: "",
+    notes: model.notes,
   };
 }

@@ -72,6 +72,8 @@ export interface StoredEncounter {
   sms_body: string;
   sms_status: SmsStatus;
   caregiver_phone: string;
+  /** Guidance attached to the decision. Missing on encounters saved before this field existed. */
+  notes?: string[];
 }
 
 export interface ResultModel {
@@ -83,6 +85,10 @@ export interface ResultModel {
   matchedServices: string[];
   questions: string[];
   citations: Citation[];
+  /** Decision notes, except a note that repeats the action line. */
+  notes: string[];
+  /** Title of level_so_far when the decision is not final yet. */
+  soFar: string | null;
   caregiverLine: string | null;
   passport: Passport;
   smsBody: string;

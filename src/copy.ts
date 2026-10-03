@@ -37,7 +37,7 @@ export const WORDING_TO_CODE: Record<string, string> = {
   "Sunken eyes": "sunken_eyes",
   "Drinking poorly": "drinking_poorly",
   "Drinks eagerly, thirsty": "drinks_eagerly",
-  "Skin pinch goes back very slowly (longer than 2 seconds)": "skin_pinch_very_slow",
+  "Skin pinch goes back very slowly": "skin_pinch_very_slow",
   "Skin pinch goes back slowly": "skin_pinch_slow",
   Fever: "fever",
   "Stiff neck": "stiff_neck",

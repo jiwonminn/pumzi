@@ -88,6 +88,7 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   }
   const facts = h("dl", {});
   if (model.reasons.length) facts.append(field("Reason", model.reasons.join("; ")));
+  if (model.soFar) facts.append(field("So far", model.soFar));
   if (model.destination) facts.append(field("Destination", model.destination));
   facts.append(field("Action", model.action));
   const banner = h("section", { class: `banner ${tone(model.passport.decision)}` }, [
@@ -100,6 +101,11 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
     banner.append(h("p", { class: "why" }, [`Services: ${model.matchedServices.join(", ")}`]));
   }
   nodes.push(banner);
+  if (model.notes.length) {
+    const guidance = h("section", { class: "panel" }, [h("h2", {}, ["For the health worker"])]);
+    for (const note of model.notes) guidance.append(h("p", {}, [note]));
+    nodes.push(guidance);
+  }
   if (model.questions.length) {
     const ask = h("section", { class: "panel" }, [h("h2", {}, ["Ask the caregiver"])]);
     for (const question of model.questions) ask.append(h("p", {}, [question]));
@@ -167,6 +173,7 @@ function historyView(screen: Screen, handlers: Handlers): HTMLElement[] {
       h("p", {}, [record.passport.facility]),
       h("p", { class: "note" }, [record.reason_text]),
     ]);
+    for (const note of record.notes ?? []) card.append(h("p", {}, [note]));
     const row = h("div", { class: "actions" });
     for (const status of ["arrived", "follow_up_done", "referred"] as const) {
       const button = h("button", { class: "ghost", type: "button" }, [STATUS_LABEL[status]]);

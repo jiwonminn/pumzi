@@ -26,6 +26,8 @@ describe("result screen", () => {
     expect(model.passport.passport_id).toBe("CP-1042");
     expect(model.caregiverLine).toContain("Hawezi kunywa");
     expect(model.caregiverLine).toContain("District Clinic B");
+    expect(model.notes).toEqual([]);
+    expect(model.soFar).toBeNull();
   });
 
   it("keeps the passport to the six contract fields", () => {
@@ -110,6 +112,76 @@ describe("handoff", () => {
     });
     const model = present(packet!, "CP-2000", NOW);
     expect(model.action).toBe("This tool doesn't cover this case. See a clinician.");
+  });
+
+  it("keeps a very slow skin pinch on the passport using the decision-layer label", () => {
+    const packet = parsePacket({
+      language: "en",
+      decision: {
+        decision: "urgent_referral",
+        level_so_far: "urgent_referral",
+        classifications: ["SEVERE DEHYDRATION"],
+        reasons: ["Skin pinch goes back very slowly", "Sunken eyes"],
+        fired_rules: ["IMCI-DIARR-01"],
+        required_care: ["iv_rehydration"],
+        follow_up_questions: [],
+        citations: [],
+        notes: ["If chest indrawing in HIV exposed/infected child, give first dose of amoxicillin and refer."],
+      },
+      facility: null,
+    });
+    const model = present(packet!, "CP-3001", NOW);
+    expect(model.passport.reason).toEqual(["skin_pinch_very_slow", "sunken_eyes"]);
+    expect(model.notes).toEqual([
+      "If chest indrawing in HIV exposed/infected child, give first dose of amoxicillin and refer.",
+    ]);
+    expect(model.soFar).toBeNull();
+    expect(toStored(model).notes).toEqual(model.notes);
+  });
+
+  it("shows what already fired while more questions remain", () => {
+    const packet = parsePacket({
+      language: "en",
+      decision: {
+        decision: "need_more_info",
+        level_so_far: "referral",
+        classifications: ["COUGH FOR MORE THAN 14 DAYS"],
+        reasons: ["Cough for 16 days"],
+        fired_rules: ["IMCI-COUGH-04"],
+        required_care: ["clinician"],
+        follow_up_questions: [
+          { field: "breaths_per_minute", question: "Count the breaths in one minute. The child must be calm." },
+        ],
+        citations: [],
+        notes: [],
+      },
+    });
+    const model = present(packet!, "CP-3002", NOW);
+    expect(model.questions).toEqual(["Count the breaths in one minute. The child must be calm."]);
+    expect(model.soFar).toBe("Referral");
+    expect(model.passport.decision).toBe("need_more_info");
+    expect(model.passport.reason).toEqual([]);
+  });
+
+  it("does not repeat the action sentence as guidance", () => {
+    const packet = parsePacket({
+      language: "en",
+      decision: {
+        decision: "out_of_scope",
+        level_so_far: null,
+        classifications: [],
+        reasons: ["The child's age is outside what this tool covers."],
+        fired_rules: [],
+        required_care: [],
+        follow_up_questions: [],
+        citations: [],
+        notes: ["This tool doesn't cover this case. See a clinician."],
+      },
+      facility: null,
+    });
+    const model = present(packet!, "CP-3003", NOW);
+    expect(model.action).toBe("This tool doesn't cover this case. See a clinician.");
+    expect(model.notes).toEqual([]);
   });
 
   it("shows follow-up questions instead of guessing", () => {
