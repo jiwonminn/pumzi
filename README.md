@@ -14,7 +14,7 @@ npm test
 npm run dev:output
 ```
 
-`npm run dev` starts the Next.js app shell. `npm run dev:output` starts the care handoff. `npm run test:core` runs the decision-layer tests.
+`npm run dev` opens the care handoff in the Next.js app. It still uses the hard-coded example until the decision layer is connected. `npm run dev:output` runs the same screen through Vite. `npm run test:core` runs the decision-layer tests.
 
 Open the handoff URL. The first screen is the hard-coded example:
 

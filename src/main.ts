@@ -78,8 +78,21 @@ function screen(): Screen {
   };
 }
 
+let mount: HTMLElement | null = null;
+let booted = false;
+
+export function startHandoff(root: HTMLElement): void {
+  mount = root;
+  if (!booted) {
+    booted = true;
+    void boot();
+    return;
+  }
+  draw();
+}
+
 function draw(): void {
-  const root = document.querySelector("#app");
+  const root = mount;
   if (!root) return;
   if (!state.cameraOn) stopCamera();
   root.replaceChildren(render(screen(), handlers));
@@ -305,4 +318,5 @@ async function boot(): Promise<void> {
   draw();
 }
 
-void boot();
+const viteRoot = document.querySelector("#app");
+if (viteRoot instanceof HTMLElement) startHandoff(viteRoot);
