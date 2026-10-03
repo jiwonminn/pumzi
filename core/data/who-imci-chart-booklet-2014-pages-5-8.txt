@@ -1,0 +1,286 @@
+Excerpt: WHO Integrated Management of Childhood Illness (IMCI) Chart Booklet, March 2014.
+Source: https://cdn.who.int/media/docs/default-source/mca-documents/child/imci-integrated-management-of-childhood-illness/imci-in-service-training/imci-chart-booklet.pdf
+Text extracted automatically from PDF pages 5 to 8 (Sick child age 2 months up to 5 years). Used only to check that every quote in the rules is word for word.
+
+===== PDF page 5 =====
+SICK CHILD AGE 2 MONTHS UP TO 5 YEARS
+ASSESS AND CLASSIFY THE SICK CHILD
+ASSESS CLASSIFY IDENTIFY TREATMENT
+ASK THE MOTHER WHAT THE CHILD'S
+PROBLEMS ARE
+Determine if this is an initial or follow-up visit for this
+problem.
+if follow-up visit, use the follow-up instructions
+on TREAT THE CHILD chart.
+if initial visit, assess the child as follows:
+USE ALL BOXES THAT MATCH THE
+CHILD'S SYMPTOMS AND PROBLEMS
+TO CLASSIFY THE ILLNESS
+CHECK FOR GENERAL DANGER SIGNS
+Ask: Look:
+Is the child able to drink or
+breastfeed?
+Does the child vomit
+everything?
+Has the child had
+convulsions?
+See if the child is lethargic
+or unconscious.
+Is the child convulsing
+now?
+    Any general danger signPink:
+VERY SEVERE
+DISEASE
+Give diazepam if convulsing now
+Quickly complete the assessment
+Give any pre-referal treatment immediately
+Treat to prevent low blood sugar
+Keep the child warm
+Refer URGENTLY.
+ 
+URGENT attention
+  
+ 
+A child with any general danger sign needs URGENT attention; complete the assessment and any pre-referral treatment immediately so referral is not delayed.
+3DJHRI
+===== PDF page 6 =====
+THEN ASK ABOUT MAIN SYMPTOMS:
+Does the child have cough or difficult breathing?
+If yes, ask: Look, listen, feel*:
+For how long? Count the
+breaths in
+one minute.
+Look for
+chest
+indrawing.
+Look and
+listen for
+stridor.
+Look and
+listen for
+wheezing.
+CHILD
+MUST BE
+CALM
+If wheezing with either
+fast breathing or chest
+indrawing:
+Give a trial of rapid acting
+inhaled bronchodilator for up
+to three times 15-20 minutes
+apart. Count the breaths and
+look for chest indrawing
+again, and then classify.
+If the child is: Fast breathing is:
+2 months up to 12 months50 breaths per minute or more
+12 Months up to 5 years40 breaths per minute or more
+    Any general danger sign
+or
+Stridor in calm child.
+Pink:
+SEVERE
+PNEUMONIA OR
+VERY SEVERE
+DISEASE
+Give first dose of an appropriate antibiotic
+Refer URGENTLY to hospital**
+Chest indrawing or
+Fast breathing.
+Yellow:
+PNEUMONIA
+Give oral Amoxicillin for 5 days***
+If wheezing (or disappeared after rapidly
+acting bronchodilator) give an inhaled
+bronchodilator for 5 days****
+If chest indrawing in HIV exposed/infected child,
+give first dose of amoxicillin and refer.
+Soothe the throat and relieve the cough with a
+safe remedy
+If coughing for more than 14 days or recurrent
+wheeze, refer for possible TB  or asthma
+assessment
+Advise mother when to return immediately
+Follow-up in 3 days
+No signs of pneumonia or
+very severe disease.
+Green:
+COUGH OR COLD
+If wheezing (or disappeared after rapidly acting
+bronchodilator) give an inhaled bronchodilator for
+5 days****
+Soothe the throat and relieve the cough with a
+safe remedy
+If coughing for more than 14 days or recurrent
+wheezing, refer for possible TB or asthma
+assessment
+Advise mother when to return immediately
+Follow-up in 5 days if not improving
+ 
+Classify
+COUGH or
+DIFFICULT
+BREATHING
+  
+ 
+*If pulse oximeter is available, determine oxygen saturation and refer if < 90%.
+** If referral is not possible, manage the child as described in the pneumonia section of the national referral guidelines or as in WHO Pocket Book for hospital care for children.
+***Oral Amoxicillin for 3 days could be used in patients with fast breathing but no chest indrawing in low HIV settings.
+**** In settings where inhaled bronchodilator is not available, oral salbutamol may be tried but not recommended for treatement of severe acute wheeze.
+3DJHRI
+===== PDF page 7 =====
+Does the child have diarrhoea?
+If yes, ask: Look and feel:
+For how long?
+Is there blood in the stool?
+Look at the child's general
+condition. Is the child:
+Lethargic or
+unconscious?
+Restless and irritable?
+Look for sunken eyes.
+Offer the child fluid. Is the
+child:
+Not able to drink or
+drinking poorly?
+Drinking eagerly,
+thirsty?
+Pinch the skin of the
+abdomen. Does it go back:
+Very slowly (longer
+than 2 seconds)?
+Slowly?
+   Two of the following signs:
+Lethargic or unconscious
+Sunken eyes
+Not able to drink or drinking
+poorly
+Skin pinch goes back very
+slowly.
+Pink:
+SEVERE
+DEHYDRATION
+If child has no other severe classification:
+Give fluid for severe dehydration (Plan C)
+OR
+If child also has another severe
+classification:
+Refer URGENTLY to hospital with mother
+giving frequent sips of ORS on the way
+Advise the mother to continue
+breastfeeding
+If child is 2 years or older and there is
+cholera in your area, give antibiotic for
+cholera
+Two of the following signs:
+Restless, irritable
+Sunken eyes
+Drinks eagerly, thirsty
+Skin pinch goes back
+slowly.
+Yellow:
+SOME
+DEHYDRATION
+Give fluid, zinc supplements, and food for some
+dehydration (Plan B)
+If child also has a severe classification:
+Refer URGENTLY to hospital with mother
+giving frequent sips of ORS on the way
+Advise the mother to continue
+breastfeeding
+Advise mother when to return immediately
+Follow-up in 5 days if not improving
+Not enough signs to classify
+as some or severe
+dehydration.
+Green:
+NO DEHYDRATION
+Give fluid, zinc supplements, and food to treat
+diarrhoea at home (Plan A)
+Advise mother when to return immediately
+Follow-up in 5 days if not improving
+ 
+for DEHYDRATION
+   
+Classify DIARRHOEA
+ 
+ 
+and if diarrhoea 14
+days or more
+Dehydration present.Pink:
+SEVERE
+PERSISTENT
+DIARRHOEA
+Treat dehydration before referral unless the child
+has another severe classification
+Refer to hospital
+No dehydration. Yellow:
+PERSISTENT
+DIARRHOEA
+Advise the mother on feeding a child who has
+PERSISTENT DIARRHOEA
+Give multivitamins and
+minerals (including zinc) for 14 days
+Follow-up in 5 days
+   
+and if blood in stool
+Blood in the stool. Yellow:
+DYSENTERY
+Give ciprofloxacin for 3 days
+Follow-up in 3 days
+   
+3DJHRI
+===== PDF page 8 =====
+Does the child have fever?
+E\KLVWRU\RUIHHOVKRWRUWHPSHUDWXUH&RUDERYH
+If yes:Decide Malaria Risk: high or low
+Then ask: Look and feel:
+For how long?If more than 7 days, has fever beenpresent every day?Has the child had measles within thelast 3 months?
+Look or feel for stiff neck.Look for runny nose.Look for any bacterial cause offever**.Look for signs of MEASLES.
+Generalized rash and
+One of these: cough, runny nose,or red eyes.
+Do a malaria test***: If NO severe classification
+In all fever cases if High malaria risk. In Low malaria risk if no obvious cause of fever present.
+   Any general danger sign orStiff neck.
+Pink:
+VERY SEVERE FEBRILEDISEASE
+Give first dose of artesunate or quinine for severe malariaGive first dose of an appropriate antibioticTreat the child to prevent low blood sugar*LYHRQHGRVHRISDUDFHWDPROLQFOLQLFIRUKLJKIHYHU&or above)Refer URGENTLY to hospital
+Malaria test POSITIVE.Yellow:
+MALARIA Give recommended first line oral antimalarial*LYHRQHGRVHRISDUDFHWDPROLQFOLQLFIRUKLJKIHYHU&or above)Give appropriate antibiotic treatment for an identified bacterial causeof feverAdvise mother when to return immediatelyFollow-up in 3 days if fever persistsIf fever is present every day for more than 7 days, refer forassessment
+Malaria test NEGATIVEOther cause of fever PRESENT.
+Green:
+FEVER:
+NO MALARIA
+*LYHRQHGRVHRISDUDFHWDPROLQFOLQLFIRUKLJKIHYHU&or above)Give appropriate antibiotic treatment for an identified bacterialcause of feverAdvise mother when to return immediatelyFollow-up in 3 days if fever persistsIf fever is present every day for more than 7 days, refer forassessment
+ 
+High or Low MalariaRisk
+   Classify FEVER
+ 
+ 
+No Malaria Risk and NoTravel to Malaria RiskArea
+Any general danger signStiff neck.
+Pink:
+VERY SEVERE FEBRILEDISEASE
+Give first dose of an appropriate antibiotic.Treat the child to prevent low blood sugar.*LYHRQHGRVHRISDUDFHWDPROLQFOLQLFIRUKLJKIHYHU&or above).Refer URGENTLY to hospital.
+No general danger signsNo stiff neck.
+Green:
+FEVER *LYHRQHGRVHRISDUDFHWDPROLQFOLQLFIRUKLJKIHYHU&or above)Give appropriate antibiotic treatment for any identified bacterialcause of feverAdvise mother when to return immediatelyFollow-up in 2 days if fever persistsIf fever is present every day for more than 7 days, refer forassessment
+   
+If the child has measles now orwithin the last 3 months:Look for mouth ulcers.Are they deep and extensive?Look for pus draining from the eye.Look for clouding of the cornea.
+    Any general danger sign orClouding of cornea orDeep or extensive mouth ulcers.
+Pink:
+SEVERE COMPLICATEDMEASLES****
+Give Vitamin A treatmentGive first dose of an appropriate antibioticIf clouding of the cornea or pus draining from the eye, applytetracycline eye ointmentRefer URGENTLY to hospital
+Pus draining from the eye orMouth ulcers.
+Yellow:
+MEASLES WITH EYE ORMOUTHCOMPLICATIONS****
+Give Vitamin A treatmentIf pus draining from the eye, treat eye infection withtetracycline eye ointmentIf mouth ulcers, treat with gentian violetFollow-up in 3 days
+Measles now or within the last 3months. Green:
+MEASLESGive Vitamin A treatment
+ 
+If MEASLES now or within last 3months, Classify
+   
+7KHVHWHPSHUDWXUHVDUHEDVHGRQD[LOODU\WHPSHUDWXUH5HFWDOWHPSHUDWXUHUHDGLQJVDUHDSSUR[LPDWHO\&KLJKHU
+**Look for local tenderness; oral sores; refusal to use a limb; hot tender swelling; red tender skin or boils; lower abdominal pain or pain on passing urine in older children.
+*** If no malaria test available: High malaria risk - classify as MALARIA; Low malaria risk AND NO obvious cause of fever - classify as MALARIA.
+**** Other important complications of measles - pneumonia, stridor, diarrhoea, ear infection, and acute malnutrition - are classified in other tables.
+3DJHRI
