@@ -1,0 +1,29 @@
+{
+  "language": "sw",
+  "decision": {
+    "decision": "urgent_referral",
+    "level_so_far": "urgent_referral",
+    "classifications": ["VERY SEVERE DISEASE"],
+    "reasons": ["Not able to drink or breastfeed"],
+    "fired_rules": ["IMCI-GDS-01"],
+    "required_care": ["pediatric_emergency"],
+    "follow_up_questions": [],
+    "citations": [
+      {
+        "rule_id": "IMCI-GDS-01",
+        "quote": "A child with any general danger sign needs URGENT attention; complete the assessment and any pre-referral treatment immediately so referral is not delayed.",
+        "source": "WHO IMCI Chart Booklet (2014)",
+        "pdf_page": 5
+      }
+    ],
+    "notes": []
+  },
+  "facility": {
+    "facility_id": "fac-003",
+    "name": "District Clinic B",
+    "matched_services": ["pediatric_emergency", "iv_rehydration"],
+    "missing_services": [],
+    "distance_km": 7.4,
+    "why": "Closest facility in the offline list that offers everything needed (7.4 km)."
+  }
+}
