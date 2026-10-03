@@ -1,6 +1,4 @@
-// Layer 5: care navigation. Finds the most appropriate facility, not just the nearest:
-// first the facilities that offer everything the child needs, then the closest of those.
-// Plain, explainable code: every recommendation says why it was picked.
+// Picks the closest facility that can actually provide the care needed, not just the nearest one.
 
 import type { CareNeed, Facility, FacilityRecommendation } from "../types";
 
@@ -8,7 +6,7 @@ export type Point = { lat: number; lon: number };
 
 const EARTH_RADIUS_KM = 6371;
 
-/** Straight-line distance in km. Travel time on real roads will be longer. */
+// Straight-line (haversine) distance. Real travel time will be longer.
 export function distanceKm(a: Point, b: Point): number {
   const rad = (deg: number) => (deg * Math.PI) / 180;
   const dLat = rad(b.lat - a.lat);
@@ -38,12 +36,8 @@ export type NavigationResult = {
   alternatives: FacilityRecommendation[];
 };
 
-/**
- * Recommend a facility for the care the child needs.
- * - Some facilities offer everything: the closest of them.
- * - None offers everything: the one missing the fewest services, then the closest, flagged as a partial match.
- * - Nothing is needed (home care): the closest facility, for follow-up.
- */
+// Full matches win, closest first. If nothing offers everything, the fewest missing services
+// wins and the reason says so. With no care needed, it's just the nearest facility for follow-up.
 export function recommendFacility(need: CareNeed[], from: Point, facilities: Facility[]): NavigationResult {
   if (facilities.length === 0) return { best: null, alternatives: [] };
 

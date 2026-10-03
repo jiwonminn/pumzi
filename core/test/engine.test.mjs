@@ -7,7 +7,7 @@ import { makeCase, NO_DEHYDRATION_SIGNS } from "./helpers.mjs";
 const run = (overrides) => evaluate(makeCase(overrides), IMCI_PROTOCOL);
 const fields = (decision) => decision.follow_up_questions.map((q) => q.field);
 
-// ---------- age scope ----------
+// Age scope
 
 test("unknown age: asks the age first", () => {
   const d = run({ age_days: null });
@@ -26,7 +26,7 @@ test("child of 5 years or more is out of scope", () => {
   assert.equal(run({ age_days: 1825 }).decision, "home_care");
 });
 
-// ---------- general danger signs (PDF page 5) ----------
+// General danger signs (p. 5)
 
 test("the team's example: fever and can't drink -> urgent referral, cited to page 5", () => {
   const d = run({ symptoms: { fever: true, cannot_drink: true, stiff_neck: false }, symptom_days: { fever: 1 } });
@@ -54,7 +54,7 @@ test("an urgent referral is not delayed by other unknowns", () => {
   assert.deepEqual(d.follow_up_questions, []);
 });
 
-// ---------- cough or difficult breathing (PDF page 6) ----------
+// Cough or difficult breathing (p. 6)
 
 test("fast breathing at 8 months is 50 or more", () => {
   const base = {
@@ -133,7 +133,7 @@ test("cough for more than 14 days -> referral", () => {
   assert.equal(d.decision, "referral");
 });
 
-// ---------- diarrhoea (PDF page 7) ----------
+// Diarrhoea (p. 7)
 
 test("two severe dehydration signs -> urgent referral needing IV rehydration", () => {
   const d = run({
@@ -184,7 +184,7 @@ test("diarrhoea 14 days or more with dehydration -> referral", () => {
   assert.ok(d.classifications.includes("SEVERE PERSISTENT DIARRHOEA"));
 });
 
-// ---------- fever (PDF page 8) ----------
+// Fever (p. 8)
 
 test("fever with stiff neck -> urgent referral", () => {
   const d = run({ symptoms: { fever: true, stiff_neck: true }, symptom_days: { fever: 2 } });
@@ -208,7 +208,7 @@ test("a single main symptom uses duration_days when no per-symptom days are give
   assert.equal(d.decision, "referral");
 });
 
-// ---------- no danger signs, confidence and safety ----------
+// No danger signs, confidence, safety
 
 test("everything checked and absent -> home care, never called a diagnosis", () => {
   const d = run({});

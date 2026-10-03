@@ -1,13 +1,5 @@
-// Layer 4: the safety + rules engine. Fixed code, no AI: the same case always gives the same answer.
-//
-// Order of checks:
-//   1. Age scope: unknown age -> ask; outside the protocol's ages -> out_of_scope.
-//   2. Run every rule (true / false / unknown).
-//   3. If an unknown rule could still make the answer more urgent, ask its questions
-//      first (need_more_info). An urgent referral is never delayed by more questions.
-//   4. Otherwise decide on the most urgent rule that fired.
-//   5. If the health worker hasn't confirmed and the language layer wasn't confident,
-//      a non-urgent answer becomes safe_fallback.
+// Runs a structured case through a protocol's rules. No AI in here, so the same case
+// always gets the same answer.
 
 import type {
   CareNeed,
@@ -28,7 +20,7 @@ export const SEVERITY: Record<DecisionLevel, number> = {
   home_care: 1,
 };
 
-/** Below this confidence, an unconfirmed non-urgent answer becomes safe_fallback. */
+// Unconfirmed, non-urgent answers below this become safe_fallback.
 export const CONFIDENCE_FLOOR = 0.6;
 
 const emptyDecision = (decision: Decision["decision"]): Decision => ({
@@ -60,22 +52,18 @@ const reasonsOf = (rule: Rule, c: StructuredCase, protocol: Protocol): string[] 
 };
 
 const questionsFor = (fields: string[], c: StructuredCase, protocol: Protocol): FollowUpQuestion[] => {
-  // A field behind a main-symptom gate is only asked once that symptom is known to be present.
+  // Hold box-specific questions until the parent symptom is confirmed.
   const hidden = new Set<string>();
   for (const [gate, boxFields] of Object.entries(protocol.gates)) {
     if (c.symptoms[gate as SymptomKey] !== true) boxFields.forEach((f) => hidden.add(f));
   }
   const wanted = new Set(fields.filter((f) => !hidden.has(f) && !protocol.known(c, f)));
-  // Ask in the protocol's order.
   return Object.keys(protocol.questions)
     .filter((field) => wanted.has(field))
     .map((field) => ({ field, question: protocol.questions[field] }));
 };
 
-/**
- * Treat anything missing as unknown, so a case from another layer with a missing
- * field can never slip past a check: no age means "ask the age", no confidence means "not confident".
- */
+// Missing fields count as unknown, so a malformed case can't slip past a check.
 const normalise = (input: StructuredCase): StructuredCase => ({
   ...input,
   age_days: typeof input.age_days === "number" ? input.age_days : null,
@@ -88,7 +76,6 @@ const normalise = (input: StructuredCase): StructuredCase => ({
 export function evaluate(input: StructuredCase, protocol: Protocol): Decision {
   const c = normalise(input);
 
-  // 1. Age scope
   if (c.age_days === null) {
     const d = emptyDecision("need_more_info");
     d.follow_up_questions = questionsFor(["age_days"], c, protocol);
@@ -103,7 +90,6 @@ export function evaluate(input: StructuredCase, protocol: Protocol): Decision {
     return d;
   }
 
-  // 2. Run every rule
   const results = protocol.rules.map((rule) => ({ rule, result: rule.applies(c) }));
   const fired = results
     .filter((r) => r.result === true)
@@ -123,7 +109,8 @@ export function evaluate(input: StructuredCase, protocol: Protocol): Decision {
   d.citations = shown.map(citationOf);
   d.notes = unique(shown.flatMap((rule) => (rule.note ? [rule.note] : [])));
 
-  // 3. Could an unknown still make this more urgent? Then ask before deciding.
+  // Urgent referrals go out straight away (IMCI p. 5: don't delay referral). Otherwise,
+  // ask first if an unknown could still make this more urgent.
   if (levelSoFar !== "urgent_referral") {
     const couldEscalate = results.filter(
       (r) =>
@@ -142,7 +129,6 @@ export function evaluate(input: StructuredCase, protocol: Protocol): Decision {
     }
   }
 
-  // 4. Decide
   if (fired.length === 0) {
     d.decision = "home_care";
     d.classifications = ["NO DANGER SIGNS FOUND"];
@@ -150,7 +136,7 @@ export function evaluate(input: StructuredCase, protocol: Protocol): Decision {
     d.notes = ["This is not a diagnosis. Follow the health worker's advice and come back if the child gets worse."];
   }
 
-  // 5. Safe fallback for unconfirmed, low-confidence, non-urgent answers
+  // Low confidence never downgrades an urgent referral.
   if (
     d.decision !== "urgent_referral" &&
     c.confirmed_by_health_worker !== true &&

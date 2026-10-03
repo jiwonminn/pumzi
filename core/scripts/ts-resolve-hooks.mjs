@@ -1,4 +1,4 @@
-// Resolve hook: if a relative import has no extension and isn't found, try the .ts file.
+// Retry relative, extensionless imports with .ts appended.
 export async function resolve(specifier, context, nextResolve) {
   try {
     return await nextResolve(specifier, context);
