@@ -30,7 +30,7 @@ Tap **Read this code**. The scan finds that same ID.
 
 Tap **Save on this phone**. Set a PIN. Lock. Open History, enter a wrong PIN, and show that the list stays locked. Enter the right PIN. Mark the referral **Arrived**.
 
-Open the outbox. "Queued on this phone. Not sent." Mark shown. Say again that nothing left the phone.
+Open the outbox. "Queued on this phone. Not sent." Open in messages. Say again that this app did not send it.
 
 ## 3:10 Where it sits in the day
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { smsComposerHref } from "../src/copy";
 import { decryptString, deriveKey, encryptString, pinIsValid } from "../src/crypto";
 import {
   EXAMPLE,
@@ -46,6 +47,17 @@ describe("result screen", () => {
     expect(model.smsBody).toContain("CP-1042");
     expect(model.smsBody).toContain("si utambuzi");
     expect(model.smsBody.toLowerCase()).not.toContain("pin");
+    expect(model.smsBody.length).toBeLessThanOrEqual(306);
+  });
+
+  it("hands the SMS to the phone composer only with a dialable number", () => {
+    const href = smsComposerHref("+255 712 345 678", model.smsBody);
+    expect(href?.startsWith("sms:+255712345678?&body=")).toBe(true);
+    expect(href?.startsWith("http")).toBe(false);
+    const body = href?.slice(href.indexOf("body=") + 5);
+    expect(decodeURIComponent(body ?? "")).toBe(model.smsBody);
+    expect(smsComposerHref("", model.smsBody)).toBeNull();
+    expect(smsComposerHref("call me", model.smsBody)).toBeNull();
   });
 
   it("starts referral tracking and the outbox", () => {

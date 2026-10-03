@@ -108,3 +108,10 @@ export function smsBody(speech: string, language: LanguageCode, passportId: stri
   }
   return `Pumzi: ${speech} ID: ${passportId}. This is not a diagnosis.`;
 }
+
+/** Phone composer link. Null when the number is missing or not dialable. */
+export function smsComposerHref(phone: string, body: string): string | null {
+  const compact = phone.replace(/[\s()-]/g, "");
+  if (!/^\+?[0-9]{7,15}$/.test(compact)) return null;
+  return `sms:${compact}?&body=${encodeURIComponent(body)}`;
+}

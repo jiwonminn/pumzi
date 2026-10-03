@@ -1,4 +1,4 @@
-import { TITLES, reasonLabel } from "./copy";
+import { TITLES, reasonLabel, smsComposerHref } from "./copy";
 import type { Passport, ReferralStatus, ResultModel, StoredEncounter, ViewName } from "./types";
 
 export interface PinPrompt {
@@ -32,7 +32,7 @@ export interface Handlers {
   onFile: (file: File) => void;
   setStatus: (id: string, status: ReferralStatus) => void;
   setPhone: (id: string, phone: string) => void;
-  setSmsShown: (id: string) => void;
+  openSms: (id: string, phone: string, body: string) => void;
   copy: (text: string) => void;
 }
 
@@ -40,6 +40,11 @@ const STATUS_LABEL: Record<ReferralStatus, string> = {
   referred: "Referred",
   arrived: "Arrived",
   follow_up_done: "Follow-up done",
+};
+
+const LANGUAGE_LABEL: Record<string, string> = {
+  sw: "Swahili",
+  en: "English",
 };
 
 function h<K extends keyof HTMLElementTagNameMap>(
@@ -188,7 +193,7 @@ function outboxView(screen: Screen, handlers: Handlers): HTMLElement[] {
       h("p", {}, [
         record.sms_status === "queued"
           ? "Queued on this phone. Not sent."
-          : "Shown on this phone. Not sent.",
+          : "Handed to the messages app. This app did not send it.",
       ]),
     ]);
     const body = h("textarea", { readonly: "true" }, [record.sms_body]);
@@ -206,10 +211,15 @@ function outboxView(screen: Screen, handlers: Handlers): HTMLElement[] {
     const row = h("div", { class: "actions" });
     const copy = h("button", { class: "ghost", type: "button" }, ["Copy message"]);
     copy.onclick = () => handlers.copy(record.sms_body);
-    const shown = h("button", { class: "primary", type: "button" }, ["Mark shown"]);
-    shown.disabled = record.sms_status === "shown";
-    shown.onclick = () => handlers.setSmsShown(record.passport.passport_id);
-    row.append(copy, shown);
+    const open = h("button", { class: "primary", type: "button" }, ["Open in messages"]);
+    const allowOpen = () => {
+      open.disabled = smsComposerHref(phone.value, record.sms_body) === null;
+    };
+    allowOpen();
+    phone.oninput = () => allowOpen();
+    open.onmousedown = (event) => event.preventDefault();
+    open.onclick = () => handlers.openSms(record.passport.passport_id, phone.value, record.sms_body);
+    row.append(copy, open);
     card.append(row);
     return card;
   });
@@ -244,6 +254,8 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
         h("dl", {}, [
           field("Reason", scanned.reason.map((code) => reasonLabel(code, "en")).join("; ")),
           field("Destination", scanned.facility),
+          field("Time", scanned.timestamp),
+          field("Language", LANGUAGE_LABEL[scanned.language] ?? scanned.language),
           field("SMS ID", scanned.passport_id),
         ]),
       ]),

@@ -1,4 +1,5 @@
 import { startCamera, stopCamera } from "./camera";
+import { smsComposerHref } from "./copy";
 import { pinIsValid } from "./crypto";
 import {
   createPin,
@@ -256,13 +257,27 @@ const handlers = {
     state.notice = "Phone number saved on this phone only.";
     draw();
   },
-  async setSmsShown(id: string) {
+  async openSms(id: string, phone: string, body: string) {
     if (!state.key) return;
+    const href = smsComposerHref(phone, body);
+    if (!href) {
+      state.alert = null;
+      state.notice = "Enter a caregiver phone first.";
+      draw();
+      return;
+    }
+    const link = document.createElement("a");
+    link.href = href;
+    document.body.append(link);
+    link.click();
+    link.remove();
     await updateEncounter(state.key, id, (record) => {
+      record.caregiver_phone = phone.trim().slice(0, 20);
       record.sms_status = "shown";
     });
     await refresh();
-    state.notice = "Marked shown. Nothing was sent.";
+    state.alert = null;
+    state.notice = "Opened in the messages app. This app did not send it.";
     draw();
   },
   async copy(text: string) {

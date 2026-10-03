@@ -179,6 +179,11 @@ dl { margin: 0; }
   color: white;
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .ghost, .nav button {
   background: var(--card);
   border-color: var(--line);

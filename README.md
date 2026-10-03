@@ -33,7 +33,7 @@ No network call after the page loads. Records stay in this browser.
 3. **Use camera** or choose a photo on the Scan tab for a code from another phone.
 4. **Save on this phone** sets a 4–6 digit PIN and stores the encounter with AES-GCM. The key never leaves the page. Reload locks it again.
 5. History tracks the referral: Referred, Arrived, Follow-up done.
-6. Outbox holds a fixed SMS. **Mark shown** only changes the local status. The app does not send the message.
+6. Outbox holds a fixed SMS. **Open in messages** fills the phone's own composer. The app does not send the message.
 
 ## Handoff
 
