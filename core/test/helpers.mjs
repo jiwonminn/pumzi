@@ -1,5 +1,4 @@
-// Builds a structured case for tests. By default every general danger sign and every
-// main symptom has been checked and is absent, and the health worker has confirmed.
+// Default test case: every danger sign and main symptom checked and absent, already confirmed.
 
 export function makeCase(overrides = {}) {
   const { symptoms = {}, ...rest } = overrides;
@@ -27,7 +26,6 @@ export function makeCase(overrides = {}) {
   };
 }
 
-/** All dehydration signs checked and absent. */
 export const NO_DEHYDRATION_SIGNS = {
   blood_in_stool: false,
   restless_irritable: false,

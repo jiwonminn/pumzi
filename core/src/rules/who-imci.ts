@@ -1,23 +1,19 @@
-// WHO IMCI danger-sign rules for a sick child aged 2 months up to 5 years.
-// Source: WHO Integrated Management of Childhood Illness (IMCI) Chart Booklet, March 2014, PDF pages 5 to 8.
-// Every quote is copied word for word from the booklet; core/test/quotes.test.mjs checks this.
+// WHO IMCI rules for a sick child aged 2 months up to 5 years.
+// Source: IMCI Chart Booklet (WHO, 2014), PDF pages 5-8. Quotes are verbatim, see test/quotes.test.mjs.
 //
-// Each rule answers true (applies), false (does not apply) or null (can't tell yet).
-// Unknown is never treated as "no": a rule that could still fire returns null, and the
-// engine asks the follow-up question instead of guessing.
+// Each rule returns true, false, or null when there isn't enough info yet. The engine
+// treats null as "ask", never as "no".
 
 import type { MainSymptom, Protocol, Rule, StructuredCase, SymptomKey, Tri } from "../types";
 
 export const IMCI_SOURCE = "WHO IMCI Chart Booklet (2014)";
 
-/** Age scope of this chart, in days: 2 months up to (not including) 5 years. */
+// 2 months up to (not including) 5 years, in days.
 export const IMCI_AGE_MIN_DAYS = 60;
 export const IMCI_AGE_MAX_DAYS_EXCLUSIVE = 1826;
 
-/** Quote for the age scope, used when a case is out of scope. */
 export const IMCI_SCOPE_QUOTE = "SICK CHILD AGE 2 MONTHS UP TO 5 YEARS";
 
-/** Plain-language labels, used for reasons and follow-up questions. */
 export const SYMPTOM_LABELS: Record<SymptomKey, string> = {
   cannot_drink: "Not able to drink or breastfeed",
   vomiting_everything: "Vomits everything",
@@ -39,21 +35,21 @@ export const SYMPTOM_LABELS: Record<SymptomKey, string> = {
   stiff_neck: "Stiff neck",
 };
 
-// ---------- three-valued helpers ----------
+// Tri-state helpers
 
 const sign = (c: StructuredCase, key: SymptomKey): Tri => c.symptoms[key] ?? null;
 
-/** true if any is true, false if all are false, otherwise null. */
+// true if any are true, false only if all are false.
 const anyOf = (...values: Tri[]): Tri =>
   values.some((v) => v === true) ? true : values.every((v) => v === false) ? false : null;
 
-/** false if any is false, true if all are true, otherwise null. */
+// false if any are false, true only if all are true.
 const allOf = (...values: Tri[]): Tri =>
   values.some((v) => v === false) ? false : values.every((v) => v === true) ? true : null;
 
 const not = (v: Tri): Tri => (v === null ? null : !v);
 
-/** "Two of the following signs": decided only when the unknowns can't change the answer. */
+// The chart's "two of the following signs". Stays null while unknowns could still tip it.
 const twoOf = (...values: Tri[]): Tri => {
   const yes = values.filter((v) => v === true).length;
   const unknown = values.filter((v) => v === null).length;
@@ -62,14 +58,14 @@ const twoOf = (...values: Tri[]): Tri => {
   return null;
 };
 
-/** A rule inside a main-symptom box applies only when that symptom is present. */
+// Box rules (cough, diarrhoea, fever) only apply when that symptom is present.
 const within = (present: Tri, inner: Tri): Tri => {
   if (present === false) return false;
   if (present === true) return inner;
   return inner === false ? false : null;
 };
 
-/** Days with this main symptom; falls back to duration_days when it's the only main symptom. */
+// Falls back to duration_days when there's only one main symptom it could belong to.
 export const daysOf = (c: StructuredCase, symptom: MainSymptom): number | null => {
   const own = c.symptom_days?.[symptom];
   if (own !== undefined && own !== null) return own;
@@ -88,7 +84,7 @@ const atLeast = (value: number | null, threshold: number): Tri =>
 const moreThan = (value: number | null, threshold: number): Tri =>
   value === null ? null : value > threshold;
 
-/** Fast breathing (PDF page 6): 50+ per minute from 2 up to 12 months, 40+ from 12 months up to 5 years. */
+// p. 6: fast is 50+/min from 2 to 12 months, 40+/min from 12 months to 5 years.
 export const fastBreathingThreshold = (ageDays: number): number => (ageDays < 365 ? 50 : 40);
 
 const fastBreathing = (c: StructuredCase): Tri => {
@@ -96,8 +92,6 @@ const fastBreathing = (c: StructuredCase): Tri => {
   if (bpm === null || c.age_days === null) return null;
   return bpm >= fastBreathingThreshold(c.age_days);
 };
-
-// ---------- the classifications ----------
 
 const generalDangerSign = (c: StructuredCase): Tri =>
   anyOf(
@@ -144,7 +138,7 @@ const stridorInCalmChild = (c: StructuredCase): Tri => {
 const DANGER_SIGN_FIELDS = ["cannot_drink", "vomiting_everything", "convulsions", "convulsing_now", "lethargy"];
 
 export const IMCI_RULES: Rule[] = [
-  // ----- General danger signs (PDF page 5) -----
+  // General danger signs (p. 5)
   {
     id: "IMCI-GDS-01",
     classification: "VERY SEVERE DISEASE",
@@ -159,7 +153,7 @@ export const IMCI_RULES: Rule[] = [
     applies: generalDangerSign,
   },
 
-  // ----- Cough or difficult breathing (PDF page 6) -----
+  // Cough or difficult breathing (p. 6)
   {
     id: "IMCI-COUGH-01",
     classification: "SEVERE PNEUMONIA OR VERY SEVERE DISEASE",
@@ -181,7 +175,7 @@ export const IMCI_RULES: Rule[] = [
     quote: "*If pulse oximeter is available, determine oxygen saturation and refer if < 90%.",
     source: IMCI_SOURCE,
     pdf_page: 6,
-    // Only when a pulse oximeter is available, so a missing reading never blocks the decision.
+    // Optional reading. A missing value shouldn't hold up the decision.
     needs: [],
     applies: (c) => (c.spo2_percent == null ? false : c.spo2_percent < 90),
     explain: (c) => [`Oxygen saturation ${c.spo2_percent}% (below 90%)`],
@@ -240,7 +234,7 @@ export const IMCI_RULES: Rule[] = [
       ),
   },
 
-  // ----- Diarrhoea (PDF page 7) -----
+  // Diarrhoea (p. 7)
   {
     id: "IMCI-DIARR-01",
     classification: "SEVERE DEHYDRATION",
@@ -319,7 +313,7 @@ export const IMCI_RULES: Rule[] = [
     applies: (c) => within(sign(c, "diarrhoea"), not(anyDehydration(c))),
   },
 
-  // ----- Fever (PDF page 8) -----
+  // Fever (p. 8)
   {
     id: "IMCI-FEVER-01",
     classification: "VERY SEVERE FEBRILE DISEASE",
@@ -355,13 +349,13 @@ export const IMCI_RULES: Rule[] = [
     source: IMCI_SOURCE,
     pdf_page: 8,
     needs: ["fever", "stiff_neck"],
-    // Only when there is no severe classification: a very severe febrile disease is referred, not tested here.
+    // The chart only tests when there's no severe classification.
     applies: (c) =>
       within(sign(c, "fever"), allOf(not(sign(c, "stiff_neck")), not(generalDangerSign(c)))),
   },
 ];
 
-/** Follow-up questions, in the order the WHO chart asks them (PDF pages 5 to 8). */
+// Kept in the same order the chart asks them.
 const IMCI_QUESTIONS: Record<string, string> = {
   age_days: "How old is the child?",
   cannot_drink: "Is the child able to drink or breastfeed?",
@@ -388,7 +382,7 @@ const IMCI_QUESTIONS: Record<string, string> = {
   stiff_neck: "Look or feel for stiff neck.",
 };
 
-/** Fields that only matter once their main symptom is known to be present. */
+// Only asked once the parent symptom is confirmed.
 const IMCI_GATES: Record<string, string[]> = {
   cough_or_difficult_breathing: ["symptom_days.cough", "breaths_per_minute", "chest_indrawing", "stridor"],
   diarrhoea: [

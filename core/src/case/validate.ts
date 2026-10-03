@@ -1,6 +1,4 @@
-// Checks that an object from the language layer matches the StructuredCase contract
-// before it reaches the rules engine. Run it on the extractor's output while building,
-// and in the app before calling evaluate().
+// Checks extractor output against the StructuredCase contract before it reaches the engine.
 
 import type { Protocol, StructuredCase } from "../types";
 
@@ -8,7 +6,7 @@ export type ValidationResult = {
   ok: boolean;
   errors: string[];
   warnings: string[];
-  /** The case with optional fields filled in as unknown, when ok is true. */
+  // Optional fields filled in as unknown. null when ok is false.
   value: StructuredCase | null;
 };
 
@@ -29,7 +27,6 @@ export function validateCase(input: unknown, protocol: Protocol): ValidationResu
     return fail();
   }
 
-  // age_days: top level, whole days, or null
   if (!("age_days" in input)) {
     if (isRecord(input.patient) && "age_days" in input.patient) {
       errors.push("age_days must be at the top level, not inside patient.");
@@ -42,7 +39,6 @@ export function validateCase(input: unknown, protocol: Protocol): ValidationResu
     errors.push("age_days must be a whole number of days, 0 or more (2 years = 730).");
   }
 
-  // symptoms: only known keys, values true / false / null
   const knownSymptoms = new Set(Object.keys(protocol.labels));
   if (!isRecord(input.symptoms)) {
     errors.push("symptoms must be an object (use {} if nothing is known yet).");

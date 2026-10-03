@@ -1,12 +1,11 @@
-// SYNTHETIC DEMO DATA. These facilities, names, locations and services are invented
-// for the demo and are labelled that way in the app. Replace them with a real export
-// (for example healthsites.io) before any real use.
+// Synthetic demo data: every facility here is made up. Swap in a real export
+// (e.g. healthsites.io) before anyone relies on it.
 
 import type { Facility } from "../types";
 
 const SOURCE = "synthetic demo data";
 
-/** Where the demo health worker is (Ondera, the brief's fictional highlands). */
+// Ondera, the fictional highlands from the challenge brief.
 export const DEMO_ORIGIN = { lat: -0.42, lon: 36.95 };
 
 export const DEMO_FACILITIES: Facility[] = [

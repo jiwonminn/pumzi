@@ -1,5 +1,5 @@
-// Every quote shown to a health worker must be copied word for word from the WHO booklet,
-// on the page it cites. Whitespace is normalised because the PDF text wraps lines.
+// Every quote must appear verbatim on the page it cites. Whitespace is normalised
+// because the PDF text wraps.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -9,7 +9,6 @@ import { IMCI_PROTOCOL } from "../src/rules/who-imci.ts";
 const excerpt = readFileSync(new URL("../data/who-imci-chart-booklet-2014-pages-5-8.txt", import.meta.url), "utf8");
 const normalise = (text) => text.replace(/\s+/g, " ").trim();
 
-/** Text of each PDF page in the excerpt, keyed by page number. */
 const pages = Object.fromEntries(
   excerpt
     .split(/===== PDF page (\d+) =====/)

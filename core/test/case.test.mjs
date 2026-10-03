@@ -6,7 +6,7 @@ import { evaluate } from "../src/rules/engine.ts";
 import { IMCI_PROTOCOL } from "../src/rules/who-imci.ts";
 import { makeCase } from "./helpers.mjs";
 
-// The contract's own example, exactly as sent to the team.
+// Same example as in the contract.
 const CONTRACT_EXAMPLE = {
   age_days: 730,
   symptoms: {
@@ -27,7 +27,7 @@ const CONTRACT_EXAMPLE = {
   language: "sw",
 };
 
-// ---------- validateCase ----------
+// validateCase
 
 test("the contract example is valid", () => {
   const r = validateCase(CONTRACT_EXAMPLE, IMCI_PROTOCOL);
@@ -73,7 +73,7 @@ test("optional fields are filled in as unknown", () => {
   assert.equal(r.value.confirmed_by_health_worker, false);
 });
 
-// ---------- the follow-up loop ----------
+// Follow-up loop
 
 test("answer kinds: yes/no for signs, numbers for counts and days", () => {
   assert.deepEqual(answerKind("lethargy"), { kind: "yes_no" });
