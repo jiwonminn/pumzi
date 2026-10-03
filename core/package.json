@@ -1,0 +1,9 @@
+{
+  "name": "pumzi-core",
+  "private": true,
+  "type": "module",
+  "description": "Decision layer: shared data formats, WHO IMCI danger-sign rules engine and care navigation. Plain TypeScript, no framework, no dependencies.",
+  "scripts": {
+    "test": "node --test"
+  }
+}
