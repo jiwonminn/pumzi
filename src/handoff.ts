@@ -82,7 +82,8 @@ function parseCitations(value: unknown): Citation[] | null {
 export function parseDecision(raw: unknown): Decision | null {
   if (!raw || typeof raw !== "object") return null;
   const row = raw as Record<string, unknown>;
-  if (!isCode(row.decision) || !isCode(row.level_so_far)) return null;
+  if (!isCode(row.decision)) return null;
+  if (row.level_so_far !== null && !isCode(row.level_so_far)) return null;
   const classifications = strings(row.classifications, 12, 120);
   const reasons = strings(row.reasons, 12, 240);
   const fired = strings(row.fired_rules, 20, 40);
@@ -93,7 +94,7 @@ export function parseDecision(raw: unknown): Decision | null {
   if (!classifications || !reasons || !fired || !care || !questions || !citations || !notes) return null;
   return {
     decision: row.decision,
-    level_so_far: row.level_so_far,
+    level_so_far: row.level_so_far === null ? null : row.level_so_far,
     classifications,
     reasons,
     fired_rules: fired,

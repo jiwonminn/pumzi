@@ -2,7 +2,7 @@
 
 Offline result screen, care passport, and encrypted encounter store for a frontline health worker.
 
-This layer takes a **decision** from the rules engine and turns it into something the worker can act on, hand to the next clinic, and keep on the phone. It does not read symptoms, apply WHO rules, or pick a facility. Those belong to the other layers.
+This layer takes a **decision** from the rules engine and turns it into something the worker can act on, hand to the next clinic, and keep on the phone. It does not read symptoms, apply WHO rules, or pick a facility. Those belong to the other layers. Shared types live in `core/src/types.ts`.
 
 Supports referral. Does not diagnose. Does not replace a clinician.
 
@@ -11,10 +11,12 @@ Supports referral. Does not diagnose. Does not replace a clinician.
 ```bash
 npm install
 npm test
-npm run dev
+npm run dev:output
 ```
 
-Open the local URL. The first screen is the hard-coded example from the architecture diagram:
+`npm run dev` starts the Next.js app shell. `npm run dev:output` starts the care handoff. `npm run test:core` runs the decision-layer tests.
+
+Open the handoff URL. The first screen is the hard-coded example:
 
 - Urgent referral recommended
 - Reason: Not able to drink or breastfeed

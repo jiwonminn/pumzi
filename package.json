@@ -1,20 +1,33 @@
 {
   "name": "pumzi",
+  "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
+    "dev": "next dev",
+    "dev:output": "vite",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:core": "npm test --prefix core"
   },
   "dependencies": {
     "jsqr": "^1.4.0",
-    "qrcode": "^1.5.4"
+    "next": "16.3.8",
+    "qrcode": "^1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
-    "typescript": "^7.0.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "tailwindcss": "^4",
+    "typescript": "^5",
     "vite": "^8.3.2",
     "vitest": "^5.0.3"
   }

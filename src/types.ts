@@ -24,7 +24,7 @@ export interface Citation {
 
 export interface Decision {
   decision: DecisionCode;
-  level_so_far: DecisionCode;
+  level_so_far: DecisionCode | null;
   classifications: string[];
   reasons: string[];
   fired_rules: string[];
