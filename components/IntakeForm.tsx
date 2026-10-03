@@ -3,6 +3,11 @@
 import { useState } from "react";
 import type { PatientCase } from "@/lib/types";
 import { mockExtractSymptoms } from "@/lib/mockExtractor";
+import {
+  isTranslatorLoaded,
+  loadTranslator,
+  translateSwahiliToEnglish,
+} from "@/lib/translator";
 import { CaseSummary } from "./CaseSummary";
 import { ExtractionReview } from "./ExtractionReview";
 import { FollowUpQuestion } from "./FollowUpQuestion";
@@ -13,6 +18,11 @@ export function IntakeForm() {
   const [description, setDescription] = useState("");
   const [patientCase, setPatientCase] = useState<PatientCase | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [translation, setTranslation] = useState("");
+  const [translationStatus, setTranslationStatus] = useState<
+    "idle" | "loading" | "translating" | "complete" | "failed"
+  >("idle");
+  const [translationError, setTranslationError] = useState("");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -21,6 +31,36 @@ export function IntakeForm() {
     const result = await mockExtractSymptoms({ age, language, description });
     setPatientCase(result);
     setIsAnalyzing(false);
+  }
+
+  async function handleTranslation() {
+    const text = description.trim();
+
+    if (!text || language !== "sw") {
+      return;
+    }
+
+    setTranslation("");
+    setTranslationError("");
+
+    try {
+      if (!isTranslatorLoaded()) {
+        setTranslationStatus("loading");
+        await loadTranslator();
+      }
+
+      setTranslationStatus("translating");
+      const result = await translateSwahiliToEnglish(text);
+      setTranslation(result);
+      setTranslationStatus("complete");
+    } catch (error) {
+      setTranslationStatus("failed");
+      setTranslationError(
+        error instanceof Error
+          ? error.message
+          : "Translation failed. Please try again.",
+      );
+    }
   }
 
   function handleLethargyAnswer(answer: boolean) {
@@ -66,6 +106,44 @@ export function IntakeForm() {
               placeholder="My child is 2 years old, has had a fever since yesterday, and cannot drink."
               className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-base leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
             />
+            {language === "sw" && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={handleTranslation}
+                  disabled={
+                    !description.trim() ||
+                    translationStatus === "loading" ||
+                    translationStatus === "translating"
+                  }
+                  className="rounded-xl border border-teal-700 bg-white px-4 py-2.5 text-sm font-bold text-teal-800 transition hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+                >
+                  {translationStatus === "loading"
+                    ? "Loading model..."
+                    : translationStatus === "translating"
+                      ? "Translating..."
+                      : "Translate to English"}
+                </button>
+                {translationStatus === "failed" && (
+                  <p role="alert" className="mt-2 text-sm font-medium text-red-700">
+                    {translationError}
+                  </p>
+                )}
+                {translationStatus === "complete" && translation && (
+                  <div className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">
+                      English Translation
+                    </p>
+                    <p className="mt-2 text-base leading-7 text-slate-800">
+                      {translation}
+                    </p>
+                    <p className="mt-2 text-xs font-medium text-teal-700">
+                      Translation complete
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </label>
           <div className="space-y-5">
             <label className="block">
