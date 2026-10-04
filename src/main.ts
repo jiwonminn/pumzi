@@ -41,6 +41,7 @@ interface State {
   qrUrl: string | null;
   scanned: ClinicalHandoff | null;
   scanNote: string | null;
+  scanQrUrl: string | null;
   cameraOn: boolean;
   busy: boolean;
 }
@@ -57,6 +58,7 @@ const state: State = {
   qrUrl: null,
   scanned: null,
   scanNote: null,
+  scanQrUrl: null,
   cameraOn: false,
   busy: false,
 };
@@ -71,12 +73,14 @@ function screen(): Screen {
     model: model(),
     qrUrl: state.qrUrl,
     unlocked: state.key !== null,
+    pinSet: state.pinSet,
     encounters: state.encounters,
     notice: state.notice,
     alert: state.alert,
     pin: state.pin,
     scanned: state.scanned,
     scanNote: state.scanNote,
+    scanQrUrl: state.scanQrUrl,
     cameraOn: state.cameraOn,
     busy: state.busy,
   };
@@ -100,6 +104,8 @@ function draw(): void {
   if (!root) return;
   if (!state.cameraOn) stopCamera();
   root.replaceChildren(render(screen(), handlers));
+  const pinEntry = root.querySelector("#pin-entry");
+  if (pinEntry instanceof HTMLInputElement) pinEntry.focus();
   if (state.cameraOn) {
     const video = root.querySelector("video");
     if (video instanceof HTMLVideoElement && !video.srcObject) {
@@ -141,7 +147,7 @@ const handlers = {
     if ((view === "history" || view === "outbox") && !state.key) {
       if (!state.pinSet) {
         state.view = "result";
-        state.notice = "Save an encounter first. That sets the PIN.";
+        state.pin = { mode: "create", next: view, error: null };
         draw();
         return;
       }
@@ -202,20 +208,20 @@ const handlers = {
         state.key = key;
       }
     } catch {
-      state.alert = "Could not unlock this phone.";
+      state.alert = state.pin.mode === "create" ? "Could not set the PIN." : "Could not unlock this phone.";
       state.pin = null;
       draw();
       return;
     }
+    const creating = state.pin.mode === "create";
     const next = state.pin.next;
     state.pin = null;
     await refresh();
-    if (next === "save") {
-      await writeEncounter();
-      return;
+    if (creating || next === "save") await writeEncounter();
+    if (next === "history" || next === "outbox") {
+      state.view = next;
+      draw();
     }
-    state.view = next;
-    draw();
   },
   cancelPin() {
     state.pin = null;
@@ -296,6 +302,7 @@ const handlers = {
 
 function applyScan(text: string | null): void {
   state.cameraOn = false;
+  state.scanQrUrl = null;
   if (!text) {
     state.scanned = null;
     state.scanNote = "Could not read that code.";
@@ -318,6 +325,12 @@ function applyScan(text: string | null): void {
       : "Passport read. The full record stays on the phone that made it.";
   state.view = "scan";
   draw();
+  const scannedId = passport.id;
+  void toQrDataUrl(text).then((url) => {
+    if (state.scanned?.id !== scannedId) return;
+    state.scanQrUrl = url;
+    draw();
+  });
 }
 
 function parseScanPayload(text: string): ClinicalHandoff | null {
