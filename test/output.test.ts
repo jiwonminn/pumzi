@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { smsComposerHref } from "../src/copy";
+import { careNeedLabel, smsComposerHref } from "../src/copy";
 import { decryptString, deriveKey, encryptString, pinIsValid } from "../src/crypto";
 import {
   EXAMPLE,
@@ -15,6 +15,11 @@ const NOW = new Date("2026-10-03T19:00:00.000Z");
 
 describe("result screen", () => {
   const model = present(EXAMPLE, EXAMPLE_PASSPORT_ID, NOW, true);
+
+  it("uses the decision layer's words for a care need", () => {
+    expect(careNeedLabel("pediatric_emergency")).toBe("Emergency care for children");
+    expect(careNeedLabel("not_a_need")).toBe("not_a_need");
+  });
 
   it("shows the contract example", () => {
     expect(model.title).toBe("Urgent referral recommended");

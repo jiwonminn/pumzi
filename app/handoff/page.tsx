@@ -14,7 +14,7 @@ export default function Handoff() {
 
   return (
     <>
-      <nav className="mx-auto w-full max-w-[28rem] px-4 pt-4">
+      <nav className="w-full px-5 pt-4 sm:px-8">
         {/* A full page load on purpose: the handoff reads the saved decision once, when it starts. */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a href="/" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">

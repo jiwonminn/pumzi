@@ -21,6 +21,19 @@ export const ACTIONS: Record<DecisionCode, string> = {
   safe_fallback: "The tool isn't sure it understood. Check each sign with the caregiver and confirm.",
 };
 
+/** Same words the decision layer shows for a care need. Unknown keys stay as written. */
+const CARE_NEED_LABELS: Record<string, string> = {
+  pediatric_emergency: "Emergency care for children",
+  oxygen: "Oxygen",
+  iv_rehydration: "IV fluids",
+  oral_rehydration: "Oral rehydration (ORS)",
+  antibiotics: "Antibiotics",
+  malaria_test: "Malaria test",
+  clinician: "Clinician",
+};
+
+export const careNeedLabel = (need: string): string => CARE_NEED_LABELS[need] ?? need;
+
 /** WHO chart wording from the contract, mapped back to symptom keys for the passport. */
 export const WORDING_TO_CODE: Record<string, string> = {
   "Not able to drink or breastfeed": "cannot_drink",

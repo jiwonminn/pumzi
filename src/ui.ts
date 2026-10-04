@@ -1,4 +1,4 @@
-import { TITLES, reasonLabel, smsComposerHref } from "./copy";
+import { TITLES, careNeedLabel, reasonLabel, smsComposerHref } from "./copy";
 import type { Passport, ReferralStatus, ResultModel, StoredEncounter, ViewName } from "./types";
 
 export interface PinPrompt {
@@ -97,13 +97,14 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   ]);
   if (model.facilityWhy) banner.append(h("p", { class: "why" }, [model.facilityWhy]));
   if (model.matchedServices.length) {
-    banner.append(h("p", { class: "why" }, [`Services: ${model.matchedServices.join(", ")}`]));
+    banner.append(h("p", { class: "why" }, [`Services: ${model.matchedServices.map(careNeedLabel).join(", ")}`]));
   }
-  nodes.push(banner);
+  const main = h("div", { class: "stack" });
+  main.append(banner);
   if (model.questions.length) {
     const ask = h("section", { class: "panel" }, [h("h2", {}, ["Ask the caregiver"])]);
     for (const question of model.questions) ask.append(h("p", {}, [question]));
-    nodes.push(ask);
+    main.append(ask);
   }
   if (model.citations.length) {
     const why = h("section", { class: "panel" }, [h("h2", {}, ["Why"])]);
@@ -111,11 +112,11 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
       why.append(h("p", { class: "quote" }, [`"${citation.quote}"`]));
       why.append(h("p", { class: "note" }, [`${citation.source}, page ${citation.pdf_page}. ${citation.rule_id}`]));
     }
-    nodes.push(why);
+    main.append(why);
   }
 
   if (model.caregiverLine) {
-    nodes.push(
+    main.append(
       h("section", { class: "panel" }, [
         h("h2", {}, ["Tell the caregiver"]),
         h("p", {}, [model.caregiverLine]),
@@ -147,7 +148,7 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   save.onclick = () => handlers.save();
   row.append(copyId, read, save);
   passport.append(row);
-  nodes.push(passport);
+  nodes.push(h("div", { class: "columns" }, [main, passport]));
   return nodes;
 }
 
@@ -264,15 +265,32 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
   return nodes;
 }
 
+function brandMark(): HTMLElement {
+  const mark = h("span", { class: "mark", "aria-hidden": "true" });
+  mark.innerHTML =
+    '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20V4m-8 8h16M7.5 6.5h9M7.5 17.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  return mark;
+}
+
 export function render(screen: Screen, handlers: Handlers): HTMLElement {
   const page = h("div", {});
   const top = h("header", { class: "top" }, [
-    h("p", { class: "brand" }, ["Pumzi", h("span", {}, ["Care handoff"])]),
+    h("div", { class: "brand" }, [
+      brandMark(),
+      h("div", {}, [
+        h("p", { class: "brand-name" }, ["Pumzi Care"]),
+        h("p", { class: "brand-sub" }, ["Care handoff"]),
+      ]),
+    ]),
   ]);
   if (screen.unlocked) {
     const lock = h("button", { class: "lock", type: "button" }, ["Lock"]);
     lock.onclick = () => handlers.lock();
     top.append(lock);
+  } else {
+    top.append(
+      h("p", { class: "saved" }, [h("span", { class: "saved-dot", "aria-hidden": "true" }), "Saved on this device"]),
+    );
   }
   page.append(top);
   if (screen.notice) page.append(h("p", { class: "notice", role: "status" }, [screen.notice]));
