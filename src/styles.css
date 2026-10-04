@@ -43,20 +43,69 @@ button {
 }
 
 #facility-map {
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
-.columns {
+.handoff-board {
   display: grid;
   gap: 0.75rem;
-  align-items: start;
+  align-items: stretch;
+  width: min(100%, 76rem);
+  margin: 0 auto;
 }
 
-.columns .banner,
-.columns .panel,
-.columns .item {
-  margin-left: 0;
-  margin-right: 0;
+.handoff-board > .referral-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+}
+
+.handoff-board .referral-card {
+  flex: 1;
+}
+
+.handoff-board .referral-card,
+.map-block {
+  min-height: 22rem;
+  height: 100%;
+}
+
+.handoff-board .referral-card {
+  aspect-ratio: auto;
+}
+
+.map-block {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  background: #f4f9fc;
+  border: 1px solid #c8d8e5;
+  border-radius: 1.1rem;
+  box-shadow: 0 12px 30px rgb(18 38 63 / 0.12);
+}
+
+.map-block > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
+.map-frame {
+  position: relative;
+  flex: 1;
+  min-height: 14rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: #e7e2d8;
+}
+
+.map-frame > div {
+  position: absolute;
+  inset: 0;
 }
 
 @media (min-width: 640px) {
@@ -71,9 +120,9 @@ button {
   }
 }
 
-@media (min-width: 800px) {
-  .columns {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+@media (min-width: 900px) {
+  .handoff-board {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -244,7 +293,7 @@ button {
 
 .referral-card-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(10rem, 0.9fr);
+  grid-template-columns: 1fr 1fr;
   gap: clamp(0.85rem, 3vw, 2rem);
   min-height: 0;
   overflow: hidden;
@@ -401,9 +450,12 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   margin-top: 1rem;
+  align-items: stretch;
 }
 
 .scan-group {
+  height: 100%;
+  min-height: 9rem;
   padding: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 0.65rem;
@@ -415,7 +467,7 @@ button {
 @media (max-width: 560px) {
   .referral-view { margin-top: 0.75rem; }
   .referral-card { aspect-ratio: auto; min-height: 20rem; }
-  .referral-card-body { grid-template-columns: minmax(0, 1.15fr) minmax(8.5rem, 0.85fr); gap: 0.6rem; }
+  .referral-card-body { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .referral-card-header,
   .referral-card-body,
   .instruction-bar { padding: 0.7rem; }

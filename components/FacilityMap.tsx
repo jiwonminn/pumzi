@@ -42,7 +42,7 @@ function MapCard({ destinationId: id }: { destinationId: string | null }) {
 
   return (
     <div>
-      <div className="h-72 overflow-hidden rounded-lg border border-border bg-card">
+      <div className="map-frame">
         <Map theme="light" center={[DEMO_ORIGIN.lon, DEMO_ORIGIN.lat]} zoom={13}>
           <MapControls />
           <MapMarker longitude={DEMO_ORIGIN.lon} latitude={DEMO_ORIGIN.lat}>

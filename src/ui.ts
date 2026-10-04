@@ -150,7 +150,9 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   const read = h("button", { class: "ghost", type: "button" }, ["Read this code"]);
   read.onclick = () => handlers.readQr();
   row.append(print, copyId, read);
-  return [h("div", { class: "referral-view" }, [card, row])];
+  const referral = h("div", { class: "referral-view" }, [card]);
+  const map = h("div", { id: "facility-map", class: "map-block" });
+  return [h("div", { class: "handoff-board" }, [referral, map]), row];
 }
 
 function historyView(screen: Screen, handlers: Handlers): HTMLElement[] {
