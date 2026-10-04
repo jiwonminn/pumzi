@@ -4,6 +4,46 @@ Offline pediatric danger-sign support for a frontline health worker. The caregiv
 
 Supports referral. Does not diagnose. Does not replace a clinician.
 
+**Live demo:** LINK GOES HERE. Try age 2 with "My child has a fever and cannot drink anything."
+
+## Two ways it runs
+
+| | Clinic laptop | Any phone, or the live link |
+|---|---|---|
+| Reads the description | NLLB-200 translates Swahili to English and Qwen2.5 reads the signs, both on the laptop's CPU (about 15 seconds) | A phrase matcher in the browser. No model, so it can't invent a symptom or a number |
+| What it needs | 3.5 GB of models, side-loaded once, then fully offline | About 1 MB, saved on the first visit, then offline |
+| Decision, clinic choice, handoff | Same code | Same code |
+
+## Small AI
+
+| Model | Job | Size | Licence |
+|---|---|---|---|
+| [facebook/nllb-200-distilled-600M](https://huggingface.co/facebook/nllb-200-distilled-600M) | Swahili to English | 2.4 GB | CC BY-NC 4.0 (non-commercial) |
+| [Qwen2.5-1.5B-Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF), Q4_K_M GGUF on llama.cpp | Reads the signs from the description | 1.1 GB | Apache 2.0 |
+
+The models only read. They never decide: the WHO rules decide, after the health worker confirms every sign.
+
+## Keeping the AI honest
+
+- Every model reading is checked against the caregiver's words (`core/src/extract/guard.ts`). A number the text doesn't state is dropped. A "no" the text doesn't say becomes "not sure". A sign only the model saw is flagged for the worker. A real case: for "My child has a cough and is breathing fast", Qwen returned 30 breaths per minute and 95% oxygen. Neither is in the sentence, so both were dropped, and the screen lists them under "Not used from the local AI".
+- The health worker confirms each sign (yes, no or not sure) before anything is decided.
+- Unknown is never treated as no. If an unanswered sign could make the result more serious, the app asks the WHO question. An urgent referral never waits for questions.
+- Outside the chart's ages (under 2 months, 5 years and over), it says so instead of guessing.
+- Patient data stays on the device. Saved records are encrypted behind a PIN (PBKDF2, AES-GCM). The care passport QR holds six fields and no name.
+
+## Grounded in the WHO chart
+
+- 15 rules from the WHO IMCI Chart Booklet (2014), pages 5 to 8: general danger signs, cough or difficult breathing, diarrhoea and fever. Each rule carries the booklet's own words and page, and the result screen shows them. A test checks every quote word for word against the booklet text.
+- The engine doesn't know about IMCI. The chart is one protocol file (`core/src/rules/who-imci.ts`), so a country's adapted chart is a new file on the same engine and tests.
+
+**What it doesn't cover.** Young infants under 2 months, children 5 and older, ear problems, malnutrition and anaemia, HIV status, measles, and treatment or doses. It treats every fever case as high malaria risk, as the chart does in high-risk areas. The facility list is made up for the demo. The Swahili phrases and caregiver lines are drafts that a Swahili speaker still needs to check. NLLB can add details that aren't there: it translated "mtoto wangu" (my child) as "my son".
+
+## Evidence
+
+- 103 decision-layer tests, covering the rules, every WHO quote, the AI check, the phrase matcher and the whole pipeline, plus 11 handoff tests.
+- 20,000 random cases through the handoff's parser: every final result was accepted.
+- End to end by hand: a Swahili description through the local AI gave an urgent referral to the closest clinic with emergency care for children. A cough with 45 breaths a minute at age 2 gave pneumonia, treat at the clinic. With the server switched off, the saved app opened and ran a full case to the handoff.
+
 ## How it fits together
 
 1. **Intake** (`app/page.tsx`, `components/`). The worker types what the caregiver says. On a laptop running the local backend, NLLB translates and Qwen reads the description. Anywhere else, a phrase matcher in the browser reads it. It has no model, so it can't invent a symptom or a number.
