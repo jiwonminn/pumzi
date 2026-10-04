@@ -11,6 +11,12 @@ Supports referral. Does not diagnose. Does not replace a clinician.
 3. **Decision layer** (`core/`). WHO IMCI rules from the Chart Booklet (2014), pages 5 to 8. Unknown is never treated as no: the engine asks follow-up questions until it can decide, then picks the nearest facility that offers the care needed.
 4. **Care handoff** (`/handoff`, `src/`). Result screen, care passport QR and encrypted encounter store.
 
+## Offline
+
+On the hosted link, a service worker (`public/sw.js`) saves the app on the device the first time it opens with internet: both pages and every build file listed at `/sw-assets`. After that it opens with no internet. The phrase matcher, the WHO rules, facility matching and the handoff all run in the browser. The local AI only runs on a laptop with the backend.
+
+It's off under `npm run dev`, so it never hides code changes. To test it, run `npm run build`, then `npx next start -p 3001`, and open http://localhost:3001 in Chrome. DevTools > Application > Service workers should show it activated. Then tick Offline in the Network tab, or stop the server, and reload.
+
 ## Intake and local AI
 
 Pumzi is an offline-first pediatric clinic intake tool. The Next.js frontend
@@ -19,7 +25,7 @@ clinical-factor extraction.
 
 ### Requirements
 
-- Node.js 20 or newer
+- Node.js 22.12 or newer (Vitest 5 needs it)
 - Python 3.11 or newer
 - Several gigabytes of disk space for the local AI models
 
