@@ -774,6 +774,11 @@ button:disabled {
   margin-right: 0;
 }
 
+.sheet .actions {
+  gap: 1.5rem;
+  margin-top: 1.15rem;
+}
+
 label { display: block; font-weight: 600; margin: 0.5rem 0 0.25rem; font-size: 0.875rem; }
 
 input[type="password"], input[type="tel"], textarea {
