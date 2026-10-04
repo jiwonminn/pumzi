@@ -676,6 +676,16 @@ button:disabled {
 
 .ghost:hover, .nav button:hover { border-color: #99f6e4; }
 
+.actions .primary,
+.actions .ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
 .nav {
   position: fixed;
   left: 0;
