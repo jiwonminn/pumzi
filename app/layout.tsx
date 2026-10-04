@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pumzi — care handoff",
-  description: "Offline referral result, care passport, and encrypted encounter store.",
+  title: "Pumzi Care",
+  description: "Offline pediatric danger-sign support: intake, WHO IMCI rules and care handoff.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
