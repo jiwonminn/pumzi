@@ -44,7 +44,7 @@ function MapCard({ destinationId: id }: { destinationId: string | null }) {
     <div>
       <div className="map-frame">
         <Map theme="light" center={[DEMO_ORIGIN.lon, DEMO_ORIGIN.lat]} zoom={13}>
-          <MapControls />
+          <MapControls position="top-right" />
           <MapMarker longitude={DEMO_ORIGIN.lon} latitude={DEMO_ORIGIN.lat}>
             <MarkerContent>
               <div className="size-3 rotate-45 border-2 border-white bg-foreground shadow" />

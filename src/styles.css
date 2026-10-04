@@ -49,35 +49,23 @@ button {
 .handoff-board {
   display: grid;
   gap: 0.75rem;
-  align-items: stretch;
+  align-items: start;
   width: min(100%, 76rem);
   margin: 0 auto;
 }
 
 .handoff-board > .referral-view {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   margin: 0;
 }
 
-.handoff-board .referral-card {
-  flex: 1;
-}
-
-.handoff-board .referral-card,
-.map-block {
-  min-height: 22rem;
-  height: 100%;
-}
-
-.handoff-board .referral-card {
-  aspect-ratio: auto;
-}
-
 .map-block {
   display: flex;
   flex-direction: column;
+  aspect-ratio: 1.58;
+  width: 100%;
+  position: relative;
+  z-index: 0;
   padding: 0.75rem;
   background: #f4f9fc;
   border: 1px solid #c8d8e5;
@@ -95,6 +83,7 @@ button {
 
 .map-frame {
   position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 14rem;
   overflow: hidden;
@@ -293,7 +282,7 @@ button {
 
 .referral-card-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(10rem, 0.9fr);
   gap: clamp(0.85rem, 3vw, 2rem);
   min-height: 0;
   overflow: hidden;
@@ -450,12 +439,9 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
   margin-top: 1rem;
-  align-items: stretch;
 }
 
 .scan-group {
-  height: 100%;
-  min-height: 9rem;
   padding: 0.75rem;
   border: 1px solid var(--line);
   border-radius: 0.65rem;
@@ -467,7 +453,7 @@ button {
 @media (max-width: 560px) {
   .referral-view { margin-top: 0.75rem; }
   .referral-card { aspect-ratio: auto; min-height: 20rem; }
-  .referral-card-body { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .referral-card-body { grid-template-columns: minmax(0, 1.15fr) minmax(8.5rem, 0.85fr); gap: 0.6rem; }
   .referral-card-header,
   .referral-card-body,
   .instruction-bar { padding: 0.7rem; }
@@ -673,6 +659,7 @@ button:disabled {
   position: fixed;
   left: 0;
   bottom: 0;
+  z-index: 30;
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
