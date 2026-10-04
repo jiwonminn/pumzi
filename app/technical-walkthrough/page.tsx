@@ -67,7 +67,9 @@ function SlideOne({ reveal }: { reveal: number }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center">
       <div className="max-w-md">
-        <p className="text-lg leading-8 text-slate-300">Caregivers describe symptoms naturally instead of filling rigid clinical forms.</p>
+
+        <p className="font-semibold text-white text-xl">Problem Statement:</p>
+        <p className="text-lg leading-8 text-slate-300">“We bridge the gap between what caregivers say and what clinics need to act on using local AI to understand patients and an offline care handoff to keep information moving.”<br></br><br></br>Caregivers describe symptoms naturally instead of filling rigid clinical forms.</p>
         <TechStrip items={["Next.js interface"]} />
       </div>
       <div className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 sm:p-8">
