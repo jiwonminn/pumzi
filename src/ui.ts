@@ -12,12 +12,14 @@ export interface Screen {
   model: ResultModel;
   qrUrl: string | null;
   unlocked: boolean;
+  pinSet: boolean;
   encounters: StoredEncounter[] | null;
   notice: string | null;
   alert: string | null;
   pin: PinPrompt | null;
   scanned: ClinicalHandoff | null;
   scanNote: string | null;
+  scanQrUrl: string | null;
   cameraOn: boolean;
   busy: boolean;
 }
@@ -109,39 +111,69 @@ function priorityLabel(decision: string): string {
   return "REVIEW";
 }
 
-function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
-  const { model } = screen;
-  const findings = model.passport.reason.slice(0, 3).map(symptomLabel);
-  const card = h("section", { id: "referral-card", class: `referral-card ${tone(model.passport.decision)}` }, [
+function decisionFor(priority: ClinicalHandoff["referral"]["priority"]): string {
+  if (priority === "urgent") return "urgent_referral";
+  if (priority === "referral") return "referral";
+  if (priority === "clinic") return "treat_at_clinic";
+  if (priority === "home") return "home_care";
+  return "safe_fallback";
+}
+
+function careCard(options: {
+  decision: string;
+  ageDays: number | null;
+  findings: string[];
+  destination: string;
+  issued: string;
+  verified: boolean;
+  qrUrl: string | null;
+  referralId: string;
+}): HTMLElement {
+  const findings = options.findings.slice(0, 3);
+  const card = h("section", { class: `referral-card ${tone(options.decision)}` }, [
     h("header", { class: "referral-card-header" }, [
       h("div", { class: "referral-brand" }, [icon("+"), h("div", {}, [h("p", { class: "referral-eyebrow" }, ["Pumzi clinic handoff"]), h("h1", {}, ["REFERRAL CARE CARD"])])]),
-      h("span", { class: `urgency-badge ${model.passport.decision === "urgent_referral" ? "urgent" : ""}` }, [priorityLabel(model.passport.decision)]),
+      h("span", { class: `urgency-badge ${options.decision === "urgent_referral" ? "urgent" : ""}` }, [priorityLabel(options.decision)]),
     ]),
     h("div", { class: "referral-card-body" }, [
       h("div", { class: "referral-main" }, [
-        h("div", { class: "patient-line" }, [icon("P"), h("strong", {}, [ageText(model.clinicalCase?.age_days ?? null)])]),
+        h("div", { class: "patient-line" }, [icon("P"), h("strong", {}, [ageText(options.ageDays)])]),
         h("section", { class: "finding-panel" }, [
           h("h2", {}, ["Key findings"]),
           findings.length ? h("ul", {}, findings.map((finding) => h("li", {}, [finding]))) : h("p", { class: "card-muted" }, ["No positive finding recorded"]),
         ]),
         h("section", { class: "destination-panel" }, [
           h("p", { class: "card-label" }, ["Go to"]),
-          h("p", { class: "destination-name" }, [icon("+"), model.destination ?? "Receiving clinic"]),
+          h("p", { class: "destination-name" }, [icon("+"), options.destination || "Receiving clinic"]),
         ]),
       ]),
       h("div", { class: "referral-qr-column" }, [
-        h("div", { class: "issued-row" }, [h("span", {}, ["Issued"]), h("strong", {}, [issuedText(model.passport.timestamp)])]),
-        h("p", { class: `verified ${model.clinicalCase?.confirmed_by_health_worker ? "" : "unverified"}` }, [model.clinicalCase?.confirmed_by_health_worker ? "OK  Reviewed by health worker" : "Review pending"]),
-        screen.qrUrl ? h("img", { class: "qr referral-qr", src: screen.qrUrl, alt: "QR code for full clinical handoff" }) : h("div", { class: "qr-placeholder" }, ["QR loading"]),
+        h("div", { class: "issued-row" }, [h("span", {}, ["Issued"]), h("strong", {}, [issuedText(options.issued)])]),
+        h("p", { class: `verified ${options.verified ? "" : "unverified"}` }, [options.verified ? "OK  Reviewed by health worker" : "Review pending"]),
+        options.qrUrl ? h("img", { class: "qr referral-qr", src: options.qrUrl, alt: "QR code for full clinical handoff" }) : h("div", { class: "qr-placeholder" }, ["QR loading"]),
         h("p", { class: "qr-caption" }, ["Scan for full clinical handoff"]),
-        h("p", { class: "referral-id" }, [`Referral ID: ${model.passport.passport_id}`]),
+        h("p", { class: "referral-id" }, [`Referral ID: ${options.referralId}`]),
       ]),
     ]),
     h("footer", { class: "instruction-bar" }, [icon("!"), h("div", {}, [h("strong", {}, ["SHOW THIS CARD ON ARRIVAL"]), h("span", {}, ["ONYESHA KADI HII UKIFIKA"])])]),
   ]);
-  if (screen.qrUrl) {
-    card.setAttribute("data-qr-ready", "true");
-  }
+  if (options.qrUrl) card.setAttribute("data-qr-ready", "true");
+  return card;
+}
+
+function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
+  const { model } = screen;
+  const card = careCard({
+    decision: model.passport.decision,
+    ageDays: model.clinicalCase?.age_days ?? null,
+    findings: model.passport.reason.map(symptomLabel),
+    destination: model.destination ?? model.passport.facility,
+    issued: model.passport.timestamp,
+    verified: model.clinicalCase?.confirmed_by_health_worker === true,
+    qrUrl: screen.qrUrl,
+    referralId: model.passport.passport_id,
+  });
+  card.id = "referral-card";
   const row = h("div", { class: "actions print-controls" });
   const print = h("button", { class: "primary", type: "button" }, ["Print card"]);
   print.onclick = () => window.print();
@@ -149,8 +181,15 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   copyId.onclick = () => handlers.copy(model.passport.passport_id);
   const read = h("button", { class: "ghost", type: "button" }, ["Read this code"]);
   read.onclick = () => handlers.readQr();
-  row.append(print, copyId, read);
-  return [h("div", { class: "referral-view" }, [card, row])];
+  const save = h("button", { class: "ghost", type: "button" }, [
+    screen.busy ? "Saving…" : screen.pinSet ? "Save on this phone" : "Set a PIN",
+  ]);
+  save.disabled = screen.busy;
+  save.onclick = () => handlers.save();
+  row.append(print, copyId, read, save);
+  const referral = h("div", { class: "referral-view" }, [card]);
+  const map = h("div", { id: "facility-map", class: "map-block" });
+  return [h("div", { class: "handoff-board" }, [referral, map, row])];
 }
 
 function historyView(screen: Screen, handlers: Handlers): HTMLElement[] {
@@ -254,6 +293,18 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
     const unknown = Object.entries(scanned.symptoms).filter(([, value]) => value === null).map(([key]) => symptomLabel(key));
     const symptoms = (title: string, values: string[]) => h("div", { class: "scan-group" }, [h("h3", {}, [title]), values.length ? h("ul", {}, values.map((value) => h("li", {}, [value]))) : h("p", { class: "card-muted" }, ["None recorded"])]);
     nodes.push(
+      h("div", { class: "referral-view scan-card" }, [
+        careCard({
+          decision: decisionFor(scanned.referral.priority),
+          ageDays: scanned.age_days,
+          findings: scanned.referral.reasons.map(symptomLabel),
+          destination: scanned.referral.destination,
+          issued: scanned.created_at,
+          verified: scanned.confirmed_by_health_worker,
+          qrUrl: screen.scanQrUrl,
+          referralId: scanned.id,
+        }),
+      ]),
       h("section", { class: "panel scan-result" }, [
         h("p", { class: "kicker" }, ["Scanned passport"]),
         h("h2", {}, [`Referral ${scanned.id}`]),
@@ -286,7 +337,7 @@ export function render(screen: Screen, handlers: Handlers): HTMLElement {
     const lock = h("button", { class: "lock", type: "button" }, ["Lock"]);
     lock.onclick = () => handlers.lock();
     top.append(lock);
-  } else {
+  } else if (screen.pinSet) {
     top.append(
       h("p", { class: "saved" }, [h("span", { class: "saved-dot", "aria-hidden": "true" }), "Saved on this device"]),
     );

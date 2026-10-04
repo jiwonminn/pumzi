@@ -43,20 +43,73 @@ button {
 }
 
 #facility-map {
-  margin-bottom: 0.75rem;
+  margin: 0;
 }
 
-.columns {
+.handoff-board {
   display: grid;
   gap: 0.75rem;
   align-items: start;
+  width: min(100%, 68rem);
+  margin: 0 auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "card"
+    "actions"
+    "map";
 }
 
-.columns .banner,
-.columns .panel,
-.columns .item {
-  margin-left: 0;
-  margin-right: 0;
+.handoff-board > .referral-view {
+  grid-area: card;
+  width: 100%;
+  margin: 0;
+}
+
+.handoff-board > .map-block {
+  grid-area: map;
+}
+
+.handoff-board > .print-controls {
+  grid-area: actions;
+  margin: 0;
+}
+
+.map-block {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 18rem;
+  position: relative;
+  z-index: 0;
+  padding: 0.75rem;
+  background: #f4f9fc;
+  border: 1px solid #c8d8e5;
+  border-radius: 1.1rem;
+  box-shadow: 0 12px 30px rgb(18 38 63 / 0.12);
+}
+
+.map-block > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.5rem;
+}
+
+.map-frame {
+  position: relative;
+  z-index: 0;
+  flex: 1;
+  min-height: 14rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  background: #e7e2d8;
+}
+
+.map-frame > div {
+  position: absolute;
+  inset: 0;
 }
 
 @media (min-width: 640px) {
@@ -71,9 +124,18 @@ button {
   }
 }
 
-@media (min-width: 800px) {
-  .columns {
-    grid-template-columns: minmax(0, 1fr) minmax(20rem, 28rem);
+@media (min-width: 900px) {
+  .handoff-board {
+    grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.85fr);
+    grid-template-areas:
+      "card map"
+      "actions .";
+    align-items: stretch;
+  }
+
+  .handoff-board > .map-block {
+    height: 100%;
+    min-height: 0;
   }
 }
 
@@ -155,14 +217,17 @@ button {
 }
 
 .referral-view {
-  width: min(100%, 54rem);
-  margin: 1.5rem auto 0;
+  width: min(100%, 42rem);
+  margin: 0 0 0.75rem;
+}
+
+.scan-card {
+  width: min(100%, 40rem);
 }
 
 .referral-card {
-  aspect-ratio: 1.58;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto auto;
   overflow: hidden;
   background: #f4f9fc;
   color: #12263f;
@@ -244,17 +309,16 @@ button {
 
 .referral-card-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(10rem, 0.9fr);
-  gap: clamp(0.85rem, 3vw, 2rem);
-  min-height: 0;
-  overflow: hidden;
+  grid-template-columns: minmax(0, 1.35fr) minmax(9.5rem, 0.8fr);
+  gap: clamp(0.85rem, 2vw, 1.25rem);
+  align-items: start;
 }
 
 .referral-main {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto;
   min-width: 0;
-  min-height: 0;
+  gap: 0.15rem;
 }
 
 .patient-line {
@@ -295,7 +359,6 @@ button {
 }
 
 .destination-panel {
-  align-self: end;
   padding-top: 0.7rem;
   border-top: 1px solid #d8e5ee;
 }
@@ -318,11 +381,9 @@ button {
 
 .referral-qr-column {
   display: grid;
-  align-content: center;
+  align-content: start;
   justify-items: center;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
   padding-left: clamp(0.65rem, 2vw, 1.25rem);
   border-left: 1px solid #d8e5ee;
 }
@@ -351,7 +412,7 @@ button {
 .verified.unverified { color: #9a5410; }
 
 .referral-qr {
-  width: min(100%, 9.5rem);
+  width: min(100%, 8rem);
   margin: 0.15rem auto;
   border: 0;
   border-radius: 0.25rem;
@@ -413,9 +474,8 @@ button {
 .scan-group li { margin: 0.2rem 0; font-size: 0.82rem; }
 
 @media (max-width: 560px) {
-  .referral-view { margin-top: 0.75rem; }
-  .referral-card { aspect-ratio: auto; min-height: 20rem; }
-  .referral-card-body { grid-template-columns: minmax(0, 1.15fr) minmax(8.5rem, 0.85fr); gap: 0.6rem; }
+  .referral-view { margin-top: 0; }
+  .referral-card-body { grid-template-columns: minmax(0, 1.15fr) minmax(7.5rem, 0.8fr); gap: 0.6rem; }
   .referral-card-header,
   .referral-card-body,
   .instruction-bar { padding: 0.7rem; }
@@ -431,8 +491,7 @@ button {
 }
 
 @media (min-width: 561px) and (max-height: 600px) {
-  .referral-view { width: min(100%, 42rem); margin-top: 0.5rem; }
-  .referral-card { aspect-ratio: 1.7; }
+  .referral-view { width: min(100%, 40rem); }
   .referral-card-header,
   .referral-card-body,
   .instruction-bar { padding: 0.75rem; }
@@ -449,7 +508,8 @@ button {
   body:has(#app) #app .referral-view,
   body:has(#app) #app .referral-card { visibility: visible; }
   body:has(#app) #app { position: absolute; inset: 0; min-height: 0; padding: 0; }
-  .top, .nav, .disclaimer, .print-controls, #facility-map, .notice, .alert { display: none !important; }
+  .top, .nav, .disclaimer, .print-controls, #facility-map, .notice, .alert, .scan-result, .panel { display: none !important; }
+  .handoff-board { display: block; width: 100%; }
   .referral-view { width: 100%; margin: 0; }
   .referral-card { width: 100%; max-width: 9.5in; margin: 0 auto; box-shadow: none; }
 }
@@ -563,9 +623,8 @@ dl { margin: 0; }
 }
 
 .referral-card .referral-qr {
-  width: min(100%, 9.5rem);
+  width: min(100%, 8rem);
   height: auto;
-  max-height: 100%;
   border: 0;
 }
 
@@ -617,10 +676,21 @@ button:disabled {
 
 .ghost:hover, .nav button:hover { border-color: #99f6e4; }
 
+.actions .primary,
+.actions .ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
 .nav {
   position: fixed;
   left: 0;
   bottom: 0;
+  z-index: 30;
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -654,7 +724,7 @@ button:disabled {
   display: grid;
   place-items: center;
   padding: 1rem;
-  z-index: 2;
+  z-index: 40;
 }
 
 .sheet {

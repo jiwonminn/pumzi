@@ -4,7 +4,7 @@ Offline pediatric danger-sign support for a frontline health worker. The caregiv
 
 Supports referral. Does not diagnose. Does not replace a clinician.
 
-**Live demo:** LINK GOES HERE. Try age 2 with "My child has a fever and cannot drink anything."
+**Live demo:** [pumzi-care.vercel.app](https://pumzi-care.vercel.app). Try age 2 with "My child has a fever and cannot drink anything."
 
 ## Two ways it runs
 
