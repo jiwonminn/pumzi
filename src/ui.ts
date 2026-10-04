@@ -144,7 +144,10 @@ function careCard(options: {
         ]),
         h("section", { class: "destination-panel" }, [
           h("p", { class: "card-label" }, ["Go to"]),
-          h("p", { class: "destination-name" }, [icon("+"), options.destination || "Receiving clinic"]),
+          h("p", { class: "destination-name" }, [
+            icon("+"),
+            h("span", { class: "destination-text" }, [options.destination || "Receiving clinic"]),
+          ]),
         ]),
       ]),
       h("div", { class: "referral-qr-column" }, [
@@ -187,9 +190,13 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   save.disabled = screen.busy;
   save.onclick = () => handlers.save();
   row.append(print, copyId, read, save);
+  const actions = h("div", { class: "handoff-actions" }, [
+    row,
+    h("p", { class: "disclaimer" }, ["Supports referral. Does not diagnose. Does not replace a clinician."]),
+  ]);
   const referral = h("div", { class: "referral-view" }, [card]);
   const map = h("div", { id: "facility-map", class: "map-block" });
-  return [h("div", { class: "handoff-board" }, [referral, map, row])];
+  return [h("div", { class: "handoff-board" }, [referral, map, actions])];
 }
 
 function historyView(screen: Screen, handlers: Handlers): HTMLElement[] {
@@ -271,18 +278,13 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
     h("h2", {}, ["Scan a passport"]),
     h("p", { class: "note" }, ["The next clinic can read this code. It is not the full record."]),
   ]);
-  if (screen.cameraOn) {
-    panel.append(h("video", { playsinline: "true", muted: "true" }));
-  }
   const row = h("div", { class: "actions" });
-  const camera = h("button", { class: "primary", type: "button" }, ["Use camera"]);
-  camera.onclick = () => handlers.startCamera();
   const file = h("input", { id: "passport-photo", class: "sr", type: "file", accept: "image/*" });
   file.onchange = () => {
     const chosen = file.files?.[0];
     if (chosen) handlers.onFile(chosen);
   };
-  row.append(camera, h("label", { class: "ghost", for: "passport-photo" }, ["Photo of a code"]), file);
+  row.append(h("label", { class: "primary", for: "passport-photo" }, ["Photo of a code"]), file);
   panel.append(row);
   const nodes = [panel];
   if (screen.scanNote) nodes.push(h("p", { class: "notice" }, [screen.scanNote]));
@@ -355,11 +357,13 @@ export function render(screen: Screen, handlers: Handlers): HTMLElement {
           ? scanView(screen, handlers)
           : resultView(screen, handlers);
   for (const node of body) page.append(node);
-  page.append(
-    h("p", { class: "disclaimer" }, [
-      "Supports referral. Does not diagnose. Does not replace a clinician.",
-    ]),
-  );
+  if (screen.view !== "result") {
+    page.append(
+      h("p", { class: "disclaimer" }, [
+        "Supports referral. Does not diagnose. Does not replace a clinician.",
+      ]),
+    );
+  }
 
   const nav = h("nav", { class: "nav" });
   const tabs: [ViewName, string][] = [
