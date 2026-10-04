@@ -355,10 +355,12 @@ export const IMCI_RULES: Rule[] = [
   },
 ];
 
-// Kept in the same order the chart asks them.
+// Kept in the same order the chart asks them. A "yes" always means the sign is there,
+// so the drinking question uses the chart's sign wording rather than its ASK wording
+// ("Is the child able to drink...?"), where yes would mean the opposite.
 const IMCI_QUESTIONS: Record<string, string> = {
   age_days: "How old is the child?",
-  cannot_drink: "Is the child able to drink or breastfeed?",
+  cannot_drink: "Is the child not able to drink or breastfeed?",
   vomiting_everything: "Does the child vomit everything?",
   convulsions: "Has the child had convulsions?",
   convulsing_now: "Is the child convulsing now?",
