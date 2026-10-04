@@ -59,6 +59,25 @@ export interface Passport {
   reason: string[];
 }
 
+export interface ClinicalHandoff {
+  v: 1;
+  id: string;
+  created_at: string;
+  age_days: number | null;
+  language: LanguageCode;
+  symptoms: Record<string, boolean | null>;
+  duration_days: number | null;
+  symptom_days: Record<string, number | null>;
+  breaths_per_minute: number | null;
+  spo2_percent: number | null;
+  referral: {
+    priority: "urgent" | "referral" | "clinic" | "home" | "unknown";
+    reasons: string[];
+    destination: string;
+  };
+  confirmed_by_health_worker: boolean;
+}
+
 export type ReferralStatus = "referred" | "arrived" | "follow_up_done";
 
 export type SmsStatus = "queued" | "shown";
@@ -86,6 +105,7 @@ export interface ResultModel {
   caregiverLine: string | null;
   passport: Passport;
   smsBody: string;
+  clinicalCase: import("../core/src/types").StructuredCase | null;
   example: boolean;
 }
 

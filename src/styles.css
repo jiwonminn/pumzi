@@ -154,6 +154,306 @@ button {
   background: #10b981;
 }
 
+.referral-view {
+  width: min(100%, 54rem);
+  margin: 1.5rem auto 0;
+}
+
+.referral-card {
+  aspect-ratio: 1.58;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  background: #f4f9fc;
+  color: #12263f;
+  border: 1px solid #c8d8e5;
+  border-radius: 1.1rem;
+  box-shadow: 0 12px 30px rgb(18 38 63 / 0.12);
+}
+
+.referral-card-header,
+.referral-card-body,
+.instruction-bar {
+  padding: clamp(0.85rem, 2.2vw, 1.35rem);
+}
+
+.referral-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #d8e5ee;
+}
+
+.referral-brand,
+.patient-line,
+.destination-name,
+.instruction-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.card-icon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.55rem;
+  background: #d9edf5;
+  color: #0b5b75;
+  font-weight: 800;
+}
+
+.referral-eyebrow,
+.card-label,
+.issued-row span,
+.qr-caption {
+  margin: 0;
+  color: #557087;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.referral-brand h1 {
+  margin: 0.15rem 0 0;
+  color: #102a43;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.urgency-badge {
+  flex: none;
+  border: 1px solid #aac4d3;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.65rem;
+  color: #1a526b;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.urgency-badge.urgent {
+  background: #b42332;
+  border-color: #b42332;
+  color: white;
+}
+
+.referral-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(10rem, 0.9fr);
+  gap: clamp(0.85rem, 3vw, 2rem);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.referral-main {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  min-width: 0;
+  min-height: 0;
+}
+
+.patient-line {
+  font-size: 1.15rem;
+}
+
+.finding-panel {
+  margin: 0.65rem 0;
+  padding: 0.7rem 0.85rem;
+  background: rgb(255 255 255 / 0.72);
+  border: 1px solid #d8e5ee;
+  border-radius: 0.65rem;
+}
+
+.finding-panel h2 {
+  margin: 0 0 0.4rem;
+  color: #183b59;
+  font-size: 0.85rem;
+}
+
+.finding-panel ul,
+.scan-group ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.finding-panel li {
+  margin: 0.22rem 0;
+  color: #1c334b;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.card-muted {
+  margin: 0;
+  color: #668095;
+  font-size: 0.8rem;
+}
+
+.destination-panel {
+  align-self: end;
+  padding-top: 0.7rem;
+  border-top: 1px solid #d8e5ee;
+}
+
+.destination-name {
+  min-width: 0;
+  margin: 0.3rem 0 0;
+  color: #102a43;
+  font-size: 1rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.destination-name .card-icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.referral-qr-column {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding-left: clamp(0.65rem, 2vw, 1.25rem);
+  border-left: 1px solid #d8e5ee;
+}
+
+.issued-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+
+.issued-row strong {
+  color: #183b59;
+  font-size: 0.8rem;
+}
+
+.verified {
+  width: 100%;
+  margin: 0.45rem 0;
+  color: #18704c;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.verified.unverified { color: #9a5410; }
+
+.referral-qr {
+  width: min(100%, 9.5rem);
+  margin: 0.15rem auto;
+  border: 0;
+  border-radius: 0.25rem;
+}
+
+.qr-placeholder {
+  display: grid;
+  place-items: center;
+  width: min(100%, 11rem);
+  aspect-ratio: 1;
+  background: white;
+  color: #557087;
+  font-size: 0.75rem;
+}
+
+.qr-caption { margin-top: 0.2rem; text-align: center; }
+
+.referral-id {
+  margin: 0.35rem 0 0;
+  color: #183b59;
+  font-size: 0.76rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+}
+
+.instruction-bar {
+  background: #e3f2f7;
+  border-top: 1px solid #c8dfe9;
+  color: #11354d;
+}
+
+.instruction-bar .card-icon {
+  background: #0b5b75;
+  color: white;
+}
+
+.instruction-bar strong,
+.instruction-bar span {
+  display: block;
+}
+
+.instruction-bar strong { font-size: 0.9rem; letter-spacing: 0.05em; }
+.instruction-bar span { margin-top: 0.15rem; color: #557087; font-size: 0.76rem; font-weight: 700; }
+
+.scan-groups {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.scan-group {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+}
+
+.scan-group h3 { margin: 0 0 0.4rem; font-size: 0.85rem; }
+.scan-group li { margin: 0.2rem 0; font-size: 0.82rem; }
+
+@media (max-width: 560px) {
+  .referral-view { margin-top: 0.75rem; }
+  .referral-card { aspect-ratio: auto; min-height: 20rem; }
+  .referral-card-body { grid-template-columns: minmax(0, 1.15fr) minmax(8.5rem, 0.85fr); gap: 0.6rem; }
+  .referral-card-header,
+  .referral-card-body,
+  .instruction-bar { padding: 0.7rem; }
+  .referral-brand h1 { font-size: 0.85rem; }
+  .referral-eyebrow { font-size: 0.58rem; }
+  .urgency-badge { padding: 0.35rem 0.45rem; font-size: 0.62rem; }
+  .finding-panel { padding: 0.55rem; }
+  .finding-panel li, .destination-name { font-size: 0.78rem; }
+  .referral-card .referral-qr { width: min(100%, 7.5rem); }
+  .instruction-bar strong { font-size: 0.72rem; }
+  .instruction-bar span { font-size: 0.62rem; }
+  .scan-groups { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 561px) and (max-height: 600px) {
+  .referral-view { width: min(100%, 42rem); margin-top: 0.5rem; }
+  .referral-card { aspect-ratio: 1.7; }
+  .referral-card-header,
+  .referral-card-body,
+  .instruction-bar { padding: 0.75rem; }
+  .referral-card .referral-qr { width: min(100%, 8rem); }
+  .finding-panel { margin: 0.4rem 0; padding: 0.55rem 0.7rem; }
+  .finding-panel li, .destination-name { font-size: 0.82rem; }
+}
+
+@media print {
+  @page { size: landscape; margin: 0.35in; }
+  body:has(#app) { background: white; }
+  body:has(#app) > * { visibility: hidden; }
+  body:has(#app) #app,
+  body:has(#app) #app .referral-view,
+  body:has(#app) #app .referral-card { visibility: visible; }
+  body:has(#app) #app { position: absolute; inset: 0; min-height: 0; padding: 0; }
+  .top, .nav, .disclaimer, .print-controls, #facility-map, .notice, .alert { display: none !important; }
+  .referral-view { width: 100%; margin: 0; }
+  .referral-card { width: 100%; max-width: 9.5in; margin: 0 auto; box-shadow: none; }
+}
+
 .lock {
   border: 1px solid var(--line);
   background: var(--card);
@@ -260,6 +560,13 @@ dl { margin: 0; }
   background: white;
   border-radius: 0.75rem;
   border: 1px solid var(--line);
+}
+
+.referral-card .referral-qr {
+  width: min(100%, 9.5rem);
+  height: auto;
+  max-height: 100%;
+  border: 0;
 }
 
 .actions, .nav-row {

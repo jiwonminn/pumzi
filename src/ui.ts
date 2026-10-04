@@ -1,5 +1,6 @@
 import { TITLES, careNeedLabel, reasonLabel, smsComposerHref } from "./copy";
-import type { Passport, ReferralStatus, ResultModel, StoredEncounter, ViewName } from "./types";
+import { SYMPTOM_LABELS } from "../core/src/rules/who-imci";
+import type { ClinicalHandoff, ReferralStatus, ResultModel, StoredEncounter, ViewName } from "./types";
 
 export interface PinPrompt {
   mode: "create" | "unlock";
@@ -15,7 +16,7 @@ export interface Screen {
   notice: string | null;
   alert: string | null;
   pin: PinPrompt | null;
-  scanned: Passport | null;
+  scanned: ClinicalHandoff | null;
   scanNote: string | null;
   cameraOn: boolean;
   busy: boolean;
@@ -76,81 +77,80 @@ function field(label: string, value: string): HTMLElement {
   ]);
 }
 
+function icon(label: string): HTMLElement {
+  return h("span", { class: "card-icon", "aria-hidden": "true" }, [label]);
+}
+
+function ageText(ageDays: number | null): string {
+  if (ageDays == null) return "Age not recorded";
+  if (ageDays >= 365) {
+    const years = Math.floor(ageDays / 365);
+    return `Age: ${years} ${years === 1 ? "year" : "years"}`;
+  }
+  const months = Math.max(1, Math.round(ageDays / 30.4));
+  return `Age: ${months} ${months === 1 ? "month" : "months"}`;
+}
+
+function issuedText(timestamp: string): string {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return timestamp;
+  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(date);
+}
+
+function symptomLabel(code: string): string {
+  return SYMPTOM_LABELS[code as keyof typeof SYMPTOM_LABELS] ?? reasonLabel(code, "en");
+}
+
+function priorityLabel(decision: string): string {
+  if (decision === "urgent_referral") return "URGENT";
+  if (decision === "referral") return "REFERRAL";
+  if (decision === "treat_at_clinic") return "CLINIC CARE";
+  if (decision === "home_care") return "HOME CARE";
+  return "REVIEW";
+}
+
 function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   const { model } = screen;
-  const nodes: HTMLElement[] = [];
-  if (model.example) {
-    nodes.push(
-      h("p", { class: "example" }, [
-        "Hard-coded example. The decision layer is not connected yet.",
+  const findings = model.passport.reason.slice(0, 3).map(symptomLabel);
+  const card = h("section", { id: "referral-card", class: `referral-card ${tone(model.passport.decision)}` }, [
+    h("header", { class: "referral-card-header" }, [
+      h("div", { class: "referral-brand" }, [icon("+"), h("div", {}, [h("p", { class: "referral-eyebrow" }, ["Pumzi clinic handoff"]), h("h1", {}, ["REFERRAL CARE CARD"])])]),
+      h("span", { class: `urgency-badge ${model.passport.decision === "urgent_referral" ? "urgent" : ""}` }, [priorityLabel(model.passport.decision)]),
+    ]),
+    h("div", { class: "referral-card-body" }, [
+      h("div", { class: "referral-main" }, [
+        h("div", { class: "patient-line" }, [icon("P"), h("strong", {}, [ageText(model.clinicalCase?.age_days ?? null)])]),
+        h("section", { class: "finding-panel" }, [
+          h("h2", {}, ["Key findings"]),
+          findings.length ? h("ul", {}, findings.map((finding) => h("li", {}, [finding]))) : h("p", { class: "card-muted" }, ["No positive finding recorded"]),
+        ]),
+        h("section", { class: "destination-panel" }, [
+          h("p", { class: "card-label" }, ["Go to"]),
+          h("p", { class: "destination-name" }, [icon("+"), model.destination ?? "Receiving clinic"]),
+        ]),
       ]),
-    );
-  }
-  const facts = h("dl", {});
-  if (model.reasons.length) facts.append(field("Reason", model.reasons.join("; ")));
-  if (model.destination) facts.append(field("Destination", model.destination));
-  facts.append(field("Action", model.action));
-  const banner = h("section", { class: `banner ${tone(model.passport.decision)}` }, [
-    h("p", { class: "kicker" }, ["Referral"]),
-    h("h1", {}, [model.title]),
-    facts,
-  ]);
-  if (model.facilityWhy) banner.append(h("p", { class: "why" }, [model.facilityWhy]));
-  if (model.matchedServices.length) {
-    banner.append(h("p", { class: "why" }, [`Services: ${model.matchedServices.map(careNeedLabel).join(", ")}`]));
-  }
-  const main = h("div", { class: "stack" });
-  main.append(banner);
-  main.append(h("div", { id: "facility-map" }));
-  if (model.questions.length) {
-    const ask = h("section", { class: "panel" }, [h("h2", {}, ["Ask the caregiver"])]);
-    for (const question of model.questions) ask.append(h("p", {}, [question]));
-    main.append(ask);
-  }
-  if (model.citations.length) {
-    const why = h("section", { class: "panel" }, [h("h2", {}, ["Why"])]);
-    for (const citation of model.citations) {
-      why.append(h("p", { class: "quote" }, [`"${citation.quote}"`]));
-      why.append(h("p", { class: "note" }, [`${citation.source}, page ${citation.pdf_page}. ${citation.rule_id}`]));
-    }
-    main.append(why);
-  }
-
-  if (model.caregiverLine) {
-    main.append(
-      h("section", { class: "panel" }, [
-        h("h2", {}, ["Tell the caregiver"]),
-        h("p", {}, [model.caregiverLine]),
-        h("p", { class: "draft" }, ["Swahili draft. A speaker still needs to check this line."]),
+      h("div", { class: "referral-qr-column" }, [
+        h("div", { class: "issued-row" }, [h("span", {}, ["Issued"]), h("strong", {}, [issuedText(model.passport.timestamp)])]),
+        h("p", { class: `verified ${model.clinicalCase?.confirmed_by_health_worker ? "" : "unverified"}` }, [model.clinicalCase?.confirmed_by_health_worker ? "OK  Reviewed by health worker" : "Review pending"]),
+        screen.qrUrl ? h("img", { class: "qr referral-qr", src: screen.qrUrl, alt: "QR code for full clinical handoff" }) : h("div", { class: "qr-placeholder" }, ["QR loading"]),
+        h("p", { class: "qr-caption" }, ["Scan for full clinical handoff"]),
+        h("p", { class: "referral-id" }, [`Referral ID: ${model.passport.passport_id}`]),
       ]),
-    );
-  }
-
-  const passport = h("section", { class: "panel" }, [
-    h("h2", {}, ["Care passport"]),
-    h("p", { class: "note" }, ["Minimal code for the next clinic. No name. No PIN."]),
-    h("p", { class: "kicker" }, ["SMS ID for a basic phone"]),
-    h("p", { class: "sms-id" }, [model.passport.passport_id]),
+    ]),
+    h("footer", { class: "instruction-bar" }, [icon("!"), h("div", {}, [h("strong", {}, ["SHOW THIS CARD ON ARRIVAL"]), h("span", {}, ["ONYESHA KADI HII UKIFIKA"])])]),
   ]);
   if (screen.qrUrl) {
-    passport.append(
-      h("img", { class: "qr", src: screen.qrUrl, alt: "Care passport QR" }),
-    );
+    card.setAttribute("data-qr-ready", "true");
   }
-  const row = h("div", { class: "actions" });
+  const row = h("div", { class: "actions print-controls" });
+  const print = h("button", { class: "primary", type: "button" }, ["Print card"]);
+  print.onclick = () => window.print();
   const copyId = h("button", { class: "ghost", type: "button" }, ["Copy SMS ID"]);
   copyId.onclick = () => handlers.copy(model.passport.passport_id);
   const read = h("button", { class: "ghost", type: "button" }, ["Read this code"]);
   read.onclick = () => handlers.readQr();
-  const save = h("button", { class: "primary", type: "button" }, [
-    screen.busy ? "Saving…" : "Save on this phone",
-  ]);
-  save.disabled = screen.busy;
-  save.onclick = () => handlers.save();
-  row.append(copyId, read, save);
-  passport.append(row);
-  nodes.push(h("div", { class: "columns" }, [main, passport]));
-  return nodes;
+  row.append(print, copyId, read);
+  return [h("div", { class: "referral-view" }, [card, row])];
 }
 
 function historyView(screen: Screen, handlers: Handlers): HTMLElement[] {
@@ -249,17 +249,23 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
   if (screen.scanNote) nodes.push(h("p", { class: "notice" }, [screen.scanNote]));
   if (screen.scanned) {
     const scanned = screen.scanned;
+    const present = Object.entries(scanned.symptoms).filter(([, value]) => value === true).map(([key]) => symptomLabel(key));
+    const denied = Object.entries(scanned.symptoms).filter(([, value]) => value === false).map(([key]) => symptomLabel(key));
+    const unknown = Object.entries(scanned.symptoms).filter(([, value]) => value === null).map(([key]) => symptomLabel(key));
+    const symptoms = (title: string, values: string[]) => h("div", { class: "scan-group" }, [h("h3", {}, [title]), values.length ? h("ul", {}, values.map((value) => h("li", {}, [value]))) : h("p", { class: "card-muted" }, ["None recorded"])]);
     nodes.push(
-      h("section", { class: `banner ${tone(scanned.decision)}` }, [
+      h("section", { class: "panel scan-result" }, [
         h("p", { class: "kicker" }, ["Scanned passport"]),
-        h("h1", {}, [TITLES[scanned.decision]]),
+        h("h2", {}, [`Referral ${scanned.id}`]),
         h("dl", {}, [
-          field("Reason", scanned.reason.map((code) => reasonLabel(code, "en")).join("; ")),
-          field("Destination", scanned.facility),
-          field("Time", scanned.timestamp),
-          field("Language", LANGUAGE_LABEL[scanned.language] ?? scanned.language),
-          field("SMS ID", scanned.passport_id),
+          field("Referral", `${scanned.referral.priority} - ${scanned.referral.destination}`),
+          field("Issued", issuedText(scanned.created_at)),
+          field("Age", ageText(scanned.age_days)),
+          field("Duration", scanned.duration_days == null ? "Unknown" : `${scanned.duration_days} days`),
+          field("Vitals", `Breaths: ${scanned.breaths_per_minute ?? "unknown"}; SpO2: ${scanned.spo2_percent == null ? "unknown" : `${scanned.spo2_percent}%`}`),
+          field("Health worker", scanned.confirmed_by_health_worker ? "Verified" : "Not verified"),
         ]),
+        h("div", { class: "scan-groups" }, [symptoms("Present", present), symptoms("Denied", denied), symptoms("Unknown / not assessed", unknown)]),
       ]),
     );
   }

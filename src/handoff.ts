@@ -2,6 +2,7 @@ import { ACTIONS, TITLES, caregiverSpeech, reasonCodes, smsBody } from "./copy";
 import exampleJson from "../shared/example-output.json";
 import type {
   Citation,
+  ClinicalHandoff,
   Decision,
   DecisionCode,
   FacilityRecommendation,
@@ -11,6 +12,7 @@ import type {
   ResultModel,
   StoredEncounter,
 } from "./types";
+import { SYMPTOM_KEYS, type StructuredCase } from "../core/src/types";
 
 const DECISIONS: readonly DecisionCode[] = [
   "urgent_referral",
@@ -43,6 +45,18 @@ function strings(value: unknown, maxItems: number, maxLen: number): string[] | n
     const text = clipped(item, maxLen);
     if (!text) return null;
     out.push(text);
+  }
+  return out;
+}
+
+function numberMap(value: unknown): Record<string, number | null> | null {
+  if (value == null) return {};
+  if (!value || typeof value !== "object") return null;
+  const out: Record<string, number | null> = {};
+  for (const [key, item] of Object.entries(value)) {
+    if (typeof item !== "number" && item !== null) return null;
+    if (typeof item === "number" && (!Number.isFinite(item) || item < 0)) return null;
+    out[key.slice(0, 40)] = item;
   }
   return out;
 }
@@ -147,20 +161,29 @@ const example = parsePacket(exampleJson);
 if (!example) throw new Error("Example output JSON is invalid");
 export const EXAMPLE: OutputPacket = example;
 
-export function loadHandoff(stored: string | null): { handoff: OutputPacket; example: boolean } {
-  if (!stored) return { handoff: EXAMPLE, example: true };
+export function loadHandoff(stored: string | null): { handoff: OutputPacket; example: boolean; clinicalCase: StructuredCase | null } {
+  if (!stored) return { handoff: EXAMPLE, example: true, clinicalCase: null };
   try {
-    const parsed = parsePacket(JSON.parse(stored) as unknown);
-    if (!parsed) return { handoff: EXAMPLE, example: true };
-    return { handoff: parsed, example: false };
+    const raw = JSON.parse(stored) as unknown;
+    const packet =
+      raw && typeof raw === "object" && "packet" in raw
+        ? parsePacket((raw as { packet?: unknown }).packet)
+        : parsePacket(raw);
+    const clinicalCase =
+      raw && typeof raw === "object" && "case" in raw
+        ? parseClinicalCase((raw as { case?: unknown }).case)
+        : null;
+    const parsed = packet;
+    if (!parsed) return { handoff: EXAMPLE, example: true, clinicalCase: null };
+    return { handoff: parsed, example: false, clinicalCase };
   } catch {
-    return { handoff: EXAMPLE, example: true };
+    return { handoff: EXAMPLE, example: true, clinicalCase: null };
   }
 }
 
 export function newPassportId(): string {
-  const n = 1000 + Math.floor(Math.random() * 9000);
-  return `CP-${n}`;
+  const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `CP-${suffix}`;
 }
 
 export function stamp(now: Date): string {
@@ -178,6 +201,135 @@ export function buildPassport(packet: OutputPacket, passportId: string, now: Dat
   };
 }
 
+function parseClinicalCase(raw: unknown): StructuredCase | null {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const age = row.age_days;
+  const duration = row.duration_days;
+  const language = row.language;
+  const symptoms = row.symptoms;
+  if (
+    (age !== null && (typeof age !== "number" || !Number.isFinite(age) || age < 0)) ||
+    (duration !== null && (typeof duration !== "number" || !Number.isFinite(duration) || duration < 0)) ||
+    (language !== "sw" && language !== "en") ||
+    !symptoms ||
+    typeof symptoms !== "object"
+  ) return null;
+  const parsedSymptoms: StructuredCase["symptoms"] = {};
+  for (const key of SYMPTOM_KEYS) {
+    const value = (symptoms as Record<string, unknown>)[key];
+    if (value !== undefined && value !== null && typeof value !== "boolean") return null;
+    parsedSymptoms[key] = value === undefined ? null : value;
+  }
+  return {
+    age_days: age as number | null,
+    symptoms: parsedSymptoms,
+    duration_days: duration as number | null,
+    symptom_days: typeof row.symptom_days === "object" && row.symptom_days ? row.symptom_days as StructuredCase["symptom_days"] : undefined,
+    breaths_per_minute: typeof row.breaths_per_minute === "number" ? row.breaths_per_minute : null,
+    spo2_percent: typeof row.spo2_percent === "number" ? row.spo2_percent : null,
+    missing_fields: Array.isArray(row.missing_fields) ? row.missing_fields.filter((value): value is string => typeof value === "string") : [],
+    confidence: typeof row.confidence === "number" ? row.confidence : 0,
+    confirmed_by_health_worker: row.confirmed_by_health_worker === true,
+    language,
+  };
+}
+
+const priorityFor = (decision: DecisionCode): ClinicalHandoff["referral"]["priority"] => {
+  if (decision === "urgent_referral") return "urgent";
+  if (decision === "referral") return "referral";
+  if (decision === "treat_at_clinic") return "clinic";
+  if (decision === "home_care") return "home";
+  return "unknown";
+};
+
+export function buildClinicalHandoff(
+  packet: OutputPacket,
+  passport: Passport,
+  clinicalCase: StructuredCase | null,
+): ClinicalHandoff {
+  const symptoms = Object.fromEntries(
+    SYMPTOM_KEYS.map((key) => [key, clinicalCase?.symptoms[key] ?? null]),
+  );
+  return {
+    v: 1,
+    id: passport.passport_id,
+    created_at: passport.timestamp,
+    age_days: clinicalCase?.age_days ?? null,
+    language: passport.language,
+    symptoms,
+    duration_days: clinicalCase?.duration_days ?? null,
+    symptom_days: clinicalCase?.symptom_days ?? {},
+    breaths_per_minute: clinicalCase?.breaths_per_minute ?? null,
+    spo2_percent: clinicalCase?.spo2_percent ?? null,
+    referral: {
+      priority: priorityFor(passport.decision),
+      reasons: passport.reason,
+      destination: passport.facility,
+    },
+    confirmed_by_health_worker: clinicalCase?.confirmed_by_health_worker === true,
+  };
+}
+
+export function handoffJson(handoff: ClinicalHandoff): string {
+  return JSON.stringify(handoff);
+}
+
+export function parseHandoff(text: string): ClinicalHandoff | null {
+  try {
+    const raw = JSON.parse(text) as unknown;
+    if (!raw || typeof raw !== "object") return null;
+    const row = raw as Record<string, unknown>;
+    if (row.v !== 1) return null;
+    const id = clipped(row.id, 16);
+    const createdAt = clipped(row.created_at, 40);
+    const language = row.language;
+    const symptoms = row.symptoms;
+    const referral = row.referral;
+    if (!id || !/^CP-[A-Z0-9]{4,8}$/i.test(id) || !createdAt || Number.isNaN(Date.parse(createdAt))) return null;
+    if (language !== "sw" && language !== "en") return null;
+    if (!symptoms || typeof symptoms !== "object") return null;
+    const parsedSymptoms: Record<string, boolean | null> = {};
+    for (const key of SYMPTOM_KEYS) {
+      const value = (symptoms as Record<string, unknown>)[key];
+      if (typeof value !== "boolean" && value !== null) return null;
+      parsedSymptoms[key] = value;
+    }
+    if (!referral || typeof referral !== "object") return null;
+    const referralRow = referral as Record<string, unknown>;
+    const priority = referralRow.priority;
+    const reasons = strings(referralRow.reasons, 12, 40);
+    const destination = typeof referralRow.destination === "string" ? referralRow.destination.trim().slice(0, 120) : null;
+    const age = row.age_days;
+    const duration = row.duration_days;
+    const breaths = row.breaths_per_minute;
+    const spo2 = row.spo2_percent;
+    const symptomDays = numberMap(row.symptom_days);
+    if (!["urgent", "referral", "clinic", "home", "unknown"].includes(priority as string) || !reasons || destination === null || !symptomDays) return null;
+    if (age !== null && (typeof age !== "number" || !Number.isFinite(age) || age < 0)) return null;
+    if (duration !== null && (typeof duration !== "number" || !Number.isFinite(duration) || duration < 0)) return null;
+    if (breaths !== null && (typeof breaths !== "number" || !Number.isFinite(breaths) || breaths < 0)) return null;
+    if (spo2 !== null && (typeof spo2 !== "number" || !Number.isFinite(spo2) || spo2 < 0)) return null;
+    if (typeof row.confirmed_by_health_worker !== "boolean") return null;
+    return {
+      v: 1,
+      id,
+      created_at: stamp(new Date(createdAt)),
+      age_days: age as number | null,
+      language,
+      symptoms: parsedSymptoms,
+      duration_days: duration as number | null,
+      symptom_days: symptomDays,
+      breaths_per_minute: breaths as number | null,
+      spo2_percent: spo2 as number | null,
+      referral: { priority: priority as ClinicalHandoff["referral"]["priority"], reasons, destination },
+      confirmed_by_health_worker: row.confirmed_by_health_worker,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function passportJson(passport: Passport): string {
   const minimal: Passport = {
     passport_id: passport.passport_id,
@@ -191,6 +343,17 @@ export function passportJson(passport: Passport): string {
 }
 
 export function parsePassport(text: string): Passport | null {
+  const handoff = parseHandoff(text);
+  if (handoff) {
+    return {
+      passport_id: handoff.id,
+      timestamp: handoff.created_at,
+      language: handoff.language,
+      decision: handoff.referral.priority === "urgent" ? "urgent_referral" : handoff.referral.priority === "referral" ? "referral" : handoff.referral.priority === "clinic" ? "treat_at_clinic" : handoff.referral.priority === "home" ? "home_care" : "safe_fallback",
+      facility: handoff.referral.destination,
+      reason: handoff.referral.reasons,
+    };
+  }
   try {
     const raw = JSON.parse(text) as unknown;
     if (!raw || typeof raw !== "object") return null;
@@ -203,7 +366,7 @@ export function parsePassport(text: string): Passport | null {
     const passportId = clipped(row.passport_id, 16);
     const reason = strings(row.reason, 12, 40);
     if (facility == null || !timestamp || !passportId || !reason) return null;
-    if (!/^CP-\d{4}$/.test(passportId)) return null;
+    if (!/^CP-[A-Z0-9]{4,8}$/i.test(passportId)) return null;
     if (Number.isNaN(Date.parse(timestamp))) return null;
     for (const code of reason) {
       if (!/^[a-z0-9_]+$/.test(code)) return null;
@@ -226,6 +389,7 @@ export function present(
   passportId: string,
   now: Date = new Date(),
   example = false,
+  clinicalCase: StructuredCase | null = null,
 ): ResultModel {
   const reasonText = packet.decision.reasons.join("; ");
   const destination = packet.facility?.name ?? null;
@@ -249,6 +413,7 @@ export function present(
     caregiverLine: packet.language === "sw" ? spoken : null,
     passport,
     smsBody: smsBody(spoken, packet.language, passport.passport_id),
+    clinicalCase,
     example,
   };
 }
