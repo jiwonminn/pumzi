@@ -83,7 +83,10 @@ export function IntakeForm() {
       return;
     }
     try {
-      localStorage.setItem("pumzi.decision", JSON.stringify(result.packet));
+      localStorage.setItem(
+        "pumzi.decision",
+        JSON.stringify({ packet: result.packet, case: { ...current, confirmed_by_health_worker: true } }),
+      );
     } catch {
       setError("Could not save the result on this device, so the handoff can't open it.");
       return;

@@ -12,15 +12,18 @@ import {
 } from "./db";
 import {
   EXAMPLE_PASSPORT_ID,
+  buildClinicalHandoff,
+  handoffJson,
   loadHandoff,
   newPassportId,
+  parseHandoff,
   parsePassport,
-  passportJson,
   present,
   toStored,
 } from "./handoff";
 import { decodeBlob, decodeDataUrl, toQrDataUrl } from "./qr";
-import type { Passport, ReferralStatus, ViewName } from "./types";
+import { SYMPTOM_KEYS } from "../core/src/types";
+import type { ClinicalHandoff, ReferralStatus, ViewName } from "./types";
 import { render, type PinPrompt, type Screen } from "./ui";
 
 const loaded = loadHandoff(localStorage.getItem("pumzi.decision"));
@@ -36,7 +39,7 @@ interface State {
   alert: string | null;
   pin: (PinPrompt & { next: "save" | "history" | "outbox" }) | null;
   qrUrl: string | null;
-  scanned: Passport | null;
+  scanned: ClinicalHandoff | null;
   scanNote: string | null;
   cameraOn: boolean;
   busy: boolean;
@@ -59,7 +62,7 @@ const state: State = {
 };
 
 function model() {
-  return present(loaded.handoff, state.passportId, startedAt, loaded.example);
+  return present(loaded.handoff, state.passportId, startedAt, loaded.example, loaded.clinicalCase);
 }
 
 function screen(): Screen {
@@ -300,7 +303,7 @@ function applyScan(text: string | null): void {
     draw();
     return;
   }
-  const passport = parsePassport(text);
+  const passport = parseScanPayload(text);
   if (!passport) {
     state.scanned = null;
     state.scanNote = "This QR is not a Pumzi care passport.";
@@ -310,11 +313,42 @@ function applyScan(text: string | null): void {
   }
   state.scanned = passport;
   state.scanNote =
-    passport.passport_id === state.passportId
+    passport.id === state.passportId
       ? "Code matches this passport."
       : "Passport read. The full record stays on the phone that made it.";
   state.view = "scan";
   draw();
+}
+
+function parseScanPayload(text: string): ClinicalHandoff | null {
+  const handoff = parseHandoff(text);
+  if (handoff) return handoff;
+  const legacy = parsePassport(text);
+  if (!legacy) return null;
+  const priority =
+    legacy.decision === "urgent_referral"
+      ? "urgent"
+      : legacy.decision === "referral"
+        ? "referral"
+        : legacy.decision === "treat_at_clinic"
+          ? "clinic"
+          : legacy.decision === "home_care"
+            ? "home"
+            : "unknown";
+  return {
+    v: 1,
+    id: legacy.passport_id,
+    created_at: legacy.timestamp,
+    age_days: null,
+    language: legacy.language,
+    symptoms: Object.fromEntries(SYMPTOM_KEYS.map((key) => [key, null])),
+    duration_days: null,
+    symptom_days: {},
+    breaths_per_minute: null,
+    spo2_percent: null,
+    referral: { priority, reasons: legacy.reason, destination: legacy.facility },
+    confirmed_by_health_worker: false,
+  };
 }
 
 function onCameraCode(text: string): void {
@@ -329,7 +363,7 @@ function onCameraError(message: string): void {
 
 async function boot(): Promise<void> {
   state.pinSet = await pinExists();
-  state.qrUrl = await toQrDataUrl(passportJson(model().passport));
+  state.qrUrl = await toQrDataUrl(handoffJson(buildClinicalHandoff(loaded.handoff, model().passport, loaded.clinicalCase)));
   draw();
 }
 
