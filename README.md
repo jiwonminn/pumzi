@@ -4,6 +4,16 @@ Offline pediatric danger-sign support for a frontline health worker. The caregiv
 
 Supports referral. Does not diagnose. Does not replace a clinician.
 
+## Problem statement
+
+"We bridge the gap between what caregivers say and what clinics need to act on using local AI to understand patients and an offline care handoff to keep information moving."
+
+A caregiver describes a sick child in ordinary words, in English or Swahili. The clinic needs confirmed signs, a decision from the WHO chart, and a destination. Local AI, or a phrase matcher when there is no model, turns those words into signs the worker checks. The care handoff carries the result to the next clinic without a network.
+
+## A visit
+
+A caregiver in Nyeri says a two-year-old has had a fever since yesterday and cannot drink. The worker types that. The signs come back for confirmation. "Cannot drink" is a general danger sign, so the chart recommends an urgent referral to the nearest clinic that can take a very sick child. The worker shows the care card. The next clinic reads the code with the camera, a photo, or a PDF. The full record stays on the first phone, behind a PIN.
+
 **Live demo:** [pumzi-care.vercel.app](https://pumzi-care.vercel.app). Try age 2 with "My child has a fever and cannot drink anything."
 
 ## Two ways it runs
@@ -275,7 +285,7 @@ No network call after the page loads. Records stay in this browser.
 
 1. Read the result, the Swahili line for the caregiver, and the SMS ID.
 2. **Read this code** decodes the QR just drawn, to prove the passport scans.
-3. **Use camera** or choose a photo on the Scan tab for a code from another phone.
+3. **Use camera**, or choose a photo or a PDF, on the Scan tab for a code from another phone.
 4. **Save on this phone** sets a 4–6 digit PIN and stores the encounter with AES-GCM. The key never leaves the page. Reload locks it again.
 5. History tracks the referral: Referred, Arrived, Follow-up done.
 6. Outbox holds a fixed SMS. **Open in messages** fills the phone's own composer. The app does not send the message.
