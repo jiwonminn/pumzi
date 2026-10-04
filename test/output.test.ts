@@ -4,7 +4,9 @@ import { decryptString, deriveKey, encryptString, pinIsValid } from "../src/cryp
 import {
   EXAMPLE,
   EXAMPLE_PASSPORT_ID,
+  buildClinicalHandoff,
   parsePacket,
+  parseHandoff,
   parsePassport,
   passportJson,
   present,
@@ -47,6 +49,32 @@ describe("result screen", () => {
     expect(parsed.reason).toEqual(["cannot_drink"]);
     expect(parsed.symptoms).toBeUndefined();
     expect(JSON.stringify(parsed)).not.toContain("PIN");
+  });
+
+  it("round-trips the full offline clinical handoff", () => {
+    const handoff = buildClinicalHandoff(EXAMPLE, model.passport, {
+      age_days: 730,
+      symptoms: {
+        cannot_drink: true,
+        vomiting_everything: null,
+        convulsions: false,
+        convulsing_now: false,
+        lethargy: null,
+      },
+      duration_days: 1,
+      symptom_days: {},
+      breaths_per_minute: null,
+      spo2_percent: null,
+      missing_fields: [],
+      confidence: 1,
+      confirmed_by_health_worker: true,
+      language: "sw",
+    });
+    const parsed = parseHandoff(JSON.stringify(handoff));
+    expect(parsed?.v).toBe(1);
+    expect(parsed?.symptoms.cannot_drink).toBe(true);
+    expect(parsed?.symptoms.vomiting_everything).toBe(null);
+    expect(parsed?.confirmed_by_health_worker).toBe(true);
   });
 
   it("queues an SMS with the ID", () => {
