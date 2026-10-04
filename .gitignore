@@ -15,8 +15,10 @@
 /.next/
 /out/
 
-# local AI models
+# local AI models and the Python environment
 /backend/models/
+.venv/
+__pycache__/
 
 # production
 /build
