@@ -276,15 +276,25 @@ function outboxView(screen: Screen, handlers: Handlers): HTMLElement[] {
 function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
   const panel = h("section", { class: "panel" }, [
     h("h2", {}, ["Scan a passport"]),
-    h("p", { class: "note" }, ["The next clinic can read this code. It is not the full record."]),
+    h("p", { class: "note" }, ["Use the camera, a photo, or a PDF of the code. It is not the full record."]),
   ]);
+  if (screen.cameraOn) {
+    panel.append(h("video", { playsinline: "true", muted: "true", autoplay: "true" }));
+  }
   const row = h("div", { class: "actions" });
-  const file = h("input", { id: "passport-photo", class: "sr", type: "file", accept: "image/*" });
+  const camera = h("button", { class: "primary", type: "button" }, ["Use camera"]);
+  camera.onclick = () => handlers.startCamera();
+  const file = h("input", {
+    id: "passport-photo",
+    class: "sr",
+    type: "file",
+    accept: "image/*,application/pdf,.pdf",
+  });
   file.onchange = () => {
     const chosen = file.files?.[0];
     if (chosen) handlers.onFile(chosen);
   };
-  row.append(h("label", { class: "primary", for: "passport-photo" }, ["Photo of a code"]), file);
+  row.append(camera, h("label", { class: "ghost", for: "passport-photo" }, ["Photo or PDF"]), file);
   panel.append(row);
   const nodes = [panel];
   if (screen.scanNote) nodes.push(h("p", { class: "notice" }, [screen.scanNote]));

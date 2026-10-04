@@ -26,7 +26,15 @@ export async function startCamera(
     return;
   }
   video.srcObject = stream;
-  await video.play();
+  video.muted = true;
+  video.playsInline = true;
+  try {
+    await video.play();
+  } catch {
+    onError("Camera blocked. Choose a photo of the code instead.");
+    stopCamera();
+    return;
+  }
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) {
