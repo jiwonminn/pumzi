@@ -78,9 +78,39 @@ test("the offline list is the Maina slice and does not invent IMCI services", ()
     assert.match(facility.source, /Maina et al/);
     assert.ok(facility.name.length > 0);
   }
+});
+
+test("an urgent referral goes to the nearest hospital, not the nearest clinic", () => {
   const { best } = recommendFacility(["pediatric_emergency"], DEMO_ORIGIN, DEMO_FACILITIES);
-  assert.equal(best.name, "Good Samaritan ACK Medical Clinic");
-  assert.deepEqual(best.missing_services, ["pediatric_emergency"]);
-  assert.match(best.why, /No facility in the offline list offers everything needed/);
-  assert.match(best.why, /Confirm before travelling/);
+  const hospital = DEMO_FACILITIES.find((f) => f.id === best.facility_id);
+  assert.equal(hospital.level, "district_hospital");
+  const nearestHospital = DEMO_FACILITIES.filter((f) => f.level === "district_hospital")
+    .sort((a, b) => distanceKm(DEMO_ORIGIN, a) - distanceKm(DEMO_ORIGIN, b))[0];
+  assert.equal(best.facility_id, nearestHospital.id);
+  assert.deepEqual(best.missing_services, []);
+  assert.match(best.why, /assumed from the facility type/);
+});
+
+test("a yellow case is treated at the nearest clinic of any kind", () => {
+  const { best } = recommendFacility(["antibiotics"], DEMO_ORIGIN, DEMO_FACILITIES);
+  const nearest = [...DEMO_FACILITIES].sort((a, b) => distanceKm(DEMO_ORIGIN, a) - distanceKm(DEMO_ORIGIN, b))[0];
+  assert.equal(best.facility_id, nearest.id);
+});
+
+test("a facility that lists its own services is taken at its word", () => {
+  const listed = { ...FIXTURE[0], services: ["oral_rehydration"] };
+  const { best } = recommendFacility(["antibiotics"], DEMO_ORIGIN, [listed]);
+  assert.deepEqual(best.missing_services, ["antibiotics"]);
+  assert.doesNotMatch(best.why, /assumed/);
+});
+
+test("every reason fits the handoff's 240-character limit", () => {
+  const needs = [[], ["pediatric_emergency"], ["oxygen", "iv_rehydration"], ["antibiotics"], ["malaria_test"],
+    ["pediatric_emergency", "oxygen", "iv_rehydration", "oral_rehydration", "antibiotics", "malaria_test", "clinician"]];
+  for (const need of needs) {
+    for (const set of [DEMO_FACILITIES, FIXTURE, FIXTURE.slice(0, 1)]) {
+      const { best, alternatives } = recommendFacility(need, DEMO_ORIGIN, set);
+      for (const r of [best, ...alternatives]) assert.ok(r.why.length <= 240, `${r.why.length}: ${r.why}`);
+    }
+  }
 });

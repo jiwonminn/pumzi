@@ -101,6 +101,6 @@ test("the backend's example reply goes through the check and on to an urgent ref
   assert.equal(validateCase(r.case, IMCI_PROTOCOL).ok, true);
   const d = decide(r.case, IMCI_PROTOCOL, DEMO_FACILITIES, DEMO_ORIGIN);
   assert.equal(d.packet.decision.decision, "urgent_referral");
-  assert.equal(d.packet.facility.name, "Good Samaritan ACK Medical Clinic");
-  assert.deepEqual(d.packet.facility.missing_services, ["pediatric_emergency"]);
+  assert.equal(d.packet.facility.name, "Nyeri Provincial General Hospital");
+  assert.deepEqual(d.packet.facility.missing_services, []);
 });

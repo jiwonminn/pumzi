@@ -36,7 +36,7 @@ The models only read. They never decide: the WHO rules decide, after the health 
 - 15 rules from the WHO IMCI Chart Booklet (2014), pages 5 to 8: general danger signs, cough or difficult breathing, diarrhoea and fever. Each rule carries the booklet's own words and page, and the result screen shows them. A test checks every quote word for word against the booklet text.
 - The engine doesn't know about IMCI. The chart is one protocol file (`core/src/rules/who-imci.ts`), so a country's adapted chart is a new file on the same engine and tests.
 
-**What it doesn't cover.** Young infants under 2 months, children 5 and older, ear problems, malnutrition and anaemia, HIV status, measles, and treatment or doses. It treats every fever case as high malaria risk, as the chart does in high-risk areas. The facility list is a 25 km slice of Maina et al. (Scientific Data, 2019) around Nyeri. That table has no IMCI service flags, so the app names the closest place and says the needed care is unconfirmed. The Swahili phrases and caregiver lines are drafts that a Swahili speaker still needs to check. NLLB can add details that aren't there: it translated "mtoto wangu" (my child) as "my son".
+**What it doesn't cover.** Young infants under 2 months, children 5 and older, ear problems, malnutrition and anaemia, HIV status, measles, and treatment or doses. It treats every fever case as high malaria risk, as the chart does in high-risk areas. The facility list is a 25 km slice of Maina et al. (Scientific Data, 2019) around Nyeri. That table has names, types and coordinates but no services, so services are assumed from the facility type, the way the IMCI chart is built: any clinic treats the yellow classifications, and urgent referrals go to a hospital. The screen says when a service was assumed. The Swahili phrases and caregiver lines are drafts that a Swahili speaker still needs to check. NLLB can add details that aren't there: it translated "mtoto wangu" (my child) as "my son".
 
 ## Evidence
 
@@ -239,7 +239,7 @@ See [backend/README.md](backend/README.md) for backend-specific details.
 - `core/src/rules/`: the WHO IMCI rules and the engine. Every rule carries its quote and page from the chart booklet, and a test checks each quote word for word against the booklet text.
 - `core/src/case/`: checks a case before it reaches the rules, and records follow-up answers.
 - `core/src/extract/`: the phrase matcher and the check on model readings.
-- `core/src/navigation/`: picks the facility. `demo-facilities.ts` is the Maina et al. (2019) slice. Services are empty because the dataset does not list them.
+- `core/src/navigation/`: picks the facility. `demo-facilities.ts` is the Maina et al. (2019) slice. The dataset doesn't list services, so `match.ts` assumes them by facility type and says so in the reason.
 
 ```bash
 npm run test:core
