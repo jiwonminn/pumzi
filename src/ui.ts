@@ -101,6 +101,7 @@ function resultView(screen: Screen, handlers: Handlers): HTMLElement[] {
   }
   const main = h("div", { class: "stack" });
   main.append(banner);
+  main.append(h("div", { id: "facility-map" }));
   if (model.questions.length) {
     const ask = h("section", { class: "panel" }, [h("h2", {}, ["Ask the caregiver"])]);
     for (const question of model.questions) ask.append(h("p", {}, [question]));
@@ -265,20 +266,12 @@ function scanView(screen: Screen, handlers: Handlers): HTMLElement[] {
   return nodes;
 }
 
-function brandMark(): HTMLElement {
-  const mark = h("span", { class: "mark", "aria-hidden": "true" });
-  mark.innerHTML =
-    '<svg viewBox="0 0 24 24" fill="none"><path d="M12 20V4m-8 8h16M7.5 6.5h9M7.5 17.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
-  return mark;
-}
-
 export function render(screen: Screen, handlers: Handlers): HTMLElement {
   const page = h("div", {});
   const top = h("header", { class: "top" }, [
     h("div", { class: "brand" }, [
-      brandMark(),
       h("div", {}, [
-        h("p", { class: "brand-name" }, ["Pumzi Care"]),
+        h("p", { class: "brand-name" }, ["Pumzi"]),
         h("p", { class: "brand-sub" }, ["Care handoff"]),
       ]),
     ]),

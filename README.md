@@ -36,7 +36,7 @@ The models only read. They never decide: the WHO rules decide, after the health 
 - 15 rules from the WHO IMCI Chart Booklet (2014), pages 5 to 8: general danger signs, cough or difficult breathing, diarrhoea and fever. Each rule carries the booklet's own words and page, and the result screen shows them. A test checks every quote word for word against the booklet text.
 - The engine doesn't know about IMCI. The chart is one protocol file (`core/src/rules/who-imci.ts`), so a country's adapted chart is a new file on the same engine and tests.
 
-**What it doesn't cover.** Young infants under 2 months, children 5 and older, ear problems, malnutrition and anaemia, HIV status, measles, and treatment or doses. It treats every fever case as high malaria risk, as the chart does in high-risk areas. The facility list is made up for the demo. The Swahili phrases and caregiver lines are drafts that a Swahili speaker still needs to check. NLLB can add details that aren't there: it translated "mtoto wangu" (my child) as "my son".
+**What it doesn't cover.** Young infants under 2 months, children 5 and older, ear problems, malnutrition and anaemia, HIV status, measles, and treatment or doses. It treats every fever case as high malaria risk, as the chart does in high-risk areas. The facility list is a 25 km slice of Maina et al. (Scientific Data, 2019) around Nyeri. That table has no IMCI service flags, so the app names the closest place and says the needed care is unconfirmed. The Swahili phrases and caregiver lines are drafts that a Swahili speaker still needs to check. NLLB can add details that aren't there: it translated "mtoto wangu" (my child) as "my son".
 
 ## Evidence
 
@@ -239,7 +239,7 @@ See [backend/README.md](backend/README.md) for backend-specific details.
 - `core/src/rules/`: the WHO IMCI rules and the engine. Every rule carries its quote and page from the chart booklet, and a test checks each quote word for word against the booklet text.
 - `core/src/case/`: checks a case before it reaches the rules, and records follow-up answers.
 - `core/src/extract/`: the phrase matcher and the check on model readings.
-- `core/src/navigation/`: picks the facility. The facility list in `demo-facilities.ts` is made up for the demo.
+- `core/src/navigation/`: picks the facility. `demo-facilities.ts` is the Maina et al. (2019) slice. Services are empty because the dataset does not list them.
 
 ```bash
 npm run test:core
@@ -265,7 +265,7 @@ Opened with no saved decision, the handoff shows the hard-coded example:
 
 - Urgent referral recommended
 - Reason: Not able to drink or breastfeed
-- Destination: District Clinic B
+- Destination: Good Samaritan ACK Medical Clinic
 - Action: Please go to the recommended facility.
 - SMS ID: `CP-1042`
 
@@ -301,12 +301,12 @@ Save this JSON in `localStorage` under `pumzi.decision`, then reload. If it is m
     "notes": []
   },
   "facility": {
-    "facility_id": "fac-003",
-    "name": "District Clinic B",
-    "matched_services": ["pediatric_emergency", "iv_rehydration"],
-    "missing_services": [],
-    "distance_km": 7.4,
-    "why": "Closest facility in the offline list that offers everything needed (7.4 km)."
+    "facility_id": "maina-001",
+    "name": "Good Samaritan ACK Medical Clinic",
+    "matched_services": [],
+    "missing_services": ["pediatric_emergency"],
+    "distance_km": 0.1,
+    "why": "No facility in the offline list offers everything needed. This one is closest among those missing the fewest services (missing: Emergency care for children; 0.1 km). Confirm before travelling if possible."
   }
 }
 ```
@@ -325,7 +325,7 @@ The QR is only these six fields. `reason` is symptom keys, not free text.
   "timestamp": "2026-10-03T19:00:00Z",
   "language": "sw",
   "decision": "urgent_referral",
-  "facility": "District Clinic B",
+  "facility": "Good Samaritan ACK Medical Clinic",
   "reason": ["cannot_drink"]
 }
 ```

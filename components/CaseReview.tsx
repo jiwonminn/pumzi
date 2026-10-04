@@ -6,6 +6,10 @@ import type { Dropped } from "@/core/src/extract/guard";
 import { SYMPTOM_LABELS } from "@/core/src/rules/who-imci";
 import { SYMPTOM_KEYS, type StructuredCase, type SymptomKey } from "@/core/src/types";
 import type { Reading } from "@/lib/intake";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const MAIN_SIGNS: SymptomKey[] = ["cough_or_difficult_breathing", "diarrhoea", "fever"];
 
@@ -39,11 +43,10 @@ const CHOICES: [string, boolean | null][] = [
   ["Not sure", null],
 ];
 
-function choiceClass(selected: boolean, value: boolean | null): string {
-  if (!selected) return "text-slate-600 hover:bg-slate-50";
-  if (value === true) return "bg-rose-700 text-white";
-  if (value === false) return "bg-slate-800 text-white";
-  return "bg-amber-100 text-amber-900";
+function choiceVariant(selected: boolean, value: boolean | null): "default" | "secondary" | "ghost" {
+  if (!selected) return "ghost";
+  if (value === null) return "secondary";
+  return "default";
 }
 
 type SignRowProps = {
@@ -56,23 +59,24 @@ type SignRowProps = {
 
 function SignRow({ label, value, note, flagged, onChange }: SignRowProps) {
   return (
-    <li className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <li className="flex flex-col gap-2 border-b border-border py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-slate-900">{label}</p>
-        {note && <p className={`mt-0.5 text-xs ${flagged ? "font-semibold text-amber-700" : "text-slate-500"}`}>{note}</p>}
+        <p className="text-sm font-medium">{label}</p>
+        {note && <p className={`mt-0.5 text-xs ${flagged ? "font-medium text-destructive" : "text-muted-foreground"}`}>{note}</p>}
       </div>
-      <div role="radiogroup" aria-label={label} className="inline-flex shrink-0 self-start rounded-xl border border-slate-300 bg-white p-0.5 sm:self-auto">
+      <div role="radiogroup" aria-label={label} className="inline-flex shrink-0 self-start rounded-lg border border-border p-0.5 sm:self-auto">
         {CHOICES.map(([text, choice]) => (
-          <button
+          <Button
             key={text}
             type="button"
+            size="sm"
+            variant={choiceVariant(value === choice, choice)}
             role="radio"
             aria-checked={value === choice}
             onClick={() => onChange(choice)}
-            className={`rounded-[10px] px-3 py-1.5 text-sm font-semibold transition ${choiceClass(value === choice, choice)}`}
           >
             {text}
-          </button>
+          </Button>
         ))}
       </div>
     </li>
@@ -82,20 +86,22 @@ function SignRow({ label, value, note, flagged, onChange }: SignRowProps) {
 type NumberFieldProps = { label: string; hint: string; value: string; onChange: (value: string) => void };
 
 function NumberField({ label, hint, value, onChange }: NumberFieldProps) {
+  const id = label.toLowerCase().replace(/[^a-z]+/g, "-");
   return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-semibold text-slate-700">{label}</span>
-      <input
+    <div className="grid gap-1">
+      <Label htmlFor={id}>{label}</Label>
+      <Input
+        id={id}
         type="number"
         min="0"
         inputMode="numeric"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Not measured"
-        className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
+        className="h-11 text-base md:text-base"
       />
-      <span className="mt-1 block text-xs text-slate-500">{hint}</span>
-    </label>
+      <span className="text-xs text-muted-foreground">{hint}</span>
+    </div>
   );
 }
 
@@ -160,19 +166,19 @@ export function CaseReview({ reading, confirmed, onConfirm }: CaseReviewProps) {
       : "Read by the phrase matcher in this browser. No AI model, so it only marks what the words say.";
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-      <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-teal-600">Step 2</p>
-      <h2 className="text-xl font-bold text-slate-900">Check what was understood</h2>
-      <p className="mt-1 text-sm text-slate-500">Confirm each sign with the caregiver. Nothing is decided until you confirm.</p>
-
-      <div className="mt-4 space-y-2 text-sm">
+    <Card>
+      <CardHeader>
+        <CardTitle>Check what was understood</CardTitle>
+        <CardDescription>Confirm each sign with the caregiver. Nothing is decided until you confirm.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
         {reading.fallbackReason && (
-          <p className="rounded-xl bg-slate-50 px-4 py-2.5 text-slate-600">Local AI unavailable: {reading.fallbackReason}</p>
+          <p className="rounded-lg bg-muted px-3 py-2 text-sm">Local AI unavailable: {reading.fallbackReason}</p>
         )}
-        <p className="rounded-xl bg-teal-50/70 px-4 py-2.5 text-teal-900">{source}</p>
+        <p className="text-sm text-muted-foreground">{source}</p>
         {reading.dropped.length > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-amber-900">
-            <p className="font-semibold">Not used from the local AI</p>
+          <div className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+            <p className="font-medium">Not used from the local AI</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-5">
               {reading.dropped.map((d) => (
                 <li key={`${d.field}-${d.value}`}>{droppedLine(d)}</li>
@@ -180,29 +186,28 @@ export function CaseReview({ reading, confirmed, onConfirm }: CaseReviewProps) {
             </ul>
           </div>
         )}
-      </div>
 
-      <h3 className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">General danger signs</h3>
-      <ul className="divide-y divide-slate-100">{dangerRows.map(row)}</ul>
+        <div>
+          <h3 className="text-sm font-medium">General danger signs</h3>
+          <ul>{dangerRows.map(row)}</ul>
+        </div>
+        <div>
+          <h3 className="text-sm font-medium">Main symptoms</h3>
+          <ul>{[...MAIN_SIGNS, ...otherRows].map(row)}</ul>
+        </div>
 
-      <h3 className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Main symptoms</h3>
-      <ul className="divide-y divide-slate-100">{[...MAIN_SIGNS, ...otherRows].map(row)}</ul>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <NumberField label="Breaths per minute" hint="Count for one full minute, child calm." value={breaths} onChange={setBreaths} />
+          <NumberField label="Oxygen saturation (%)" hint="Only with a pulse oximeter." value={spo2} onChange={setSpo2} />
+          <NumberField label="Days sick" hint="How long the child has been ill." value={days} onChange={setDays} />
+        </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        <NumberField label="Breaths per minute" hint="Count for one full minute, child calm." value={breaths} onChange={setBreaths} />
-        <NumberField label="Oxygen saturation (%)" hint="Only with a pulse oximeter." value={spo2} onChange={setSpo2} />
-        <NumberField label="Days sick" hint="How long the child has been ill." value={days} onChange={setDays} />
-      </div>
-
-      <div className="mt-6 flex justify-end border-t border-slate-100 pt-5">
-        <button
-          type="button"
-          onClick={confirm}
-          className="w-full rounded-xl bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-teal-800 sm:w-auto"
-        >
-          Confirm and assess
-        </button>
-      </div>
-    </section>
+        <div className="flex justify-end">
+          <Button type="button" onClick={confirm} className="h-11 px-4">
+            Confirm and assess
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

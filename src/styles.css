@@ -1,21 +1,21 @@
 :root {
   color-scheme: light;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --body: #475569;
-  --line: #e2e8f0;
-  --paper: #f4f8f8;
-  --card: #ffffff;
+  --ink: #2c261c;
+  --muted: #6b6256;
+  --body: #4a4338;
+  --line: #e4ddd0;
+  --paper: #f6f3ec;
+  --card: #fcfbf8;
   --urgent: #8f1d2c;
   --urgent-ink: #fff7f7;
-  --treat: #b45309;
-  --home: #047857;
-  --scope: #475569;
-  --accent: #0f766e;
-  --accent-hover: #115e59;
-  --focus: #14b8a6;
+  --treat: #9a5410;
+  --home: #1f6b45;
+  --scope: #4a4338;
+  --accent: #234236;
+  --accent-hover: #1a3329;
+  --focus: #3d6b54;
   --shadow: 0 1px 2px rgb(15 23 42 / 0.06);
-  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  font-family: var(--font-source), "Source Sans 3", sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +24,7 @@ body:has(#app) {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  font-family: var(--font-source), "Source Sans 3", sans-serif;
 }
 
 button, input {
@@ -40,6 +40,10 @@ button {
   margin: 0 auto;
   min-height: 100vh;
   padding: 0 1.25rem 6.5rem;
+}
+
+#facility-map {
+  margin-bottom: 0.75rem;
 }
 
 .columns {

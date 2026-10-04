@@ -25,7 +25,8 @@ test("contract example -> the packet the handoff screen reads", () => {
   assert.deepEqual(Object.keys(r.packet).sort(), ["decision", "facility", "language"]);
   assert.equal(r.packet.language, "sw");
   assert.equal(r.packet.decision.decision, "urgent_referral");
-  assert.equal(r.packet.facility.name, "District Clinic B");
+  assert.equal(r.packet.facility.name, "Good Samaritan ACK Medical Clinic");
+  assert.deepEqual(r.packet.facility.missing_services, ["pediatric_emergency"]);
 });
 
 test("the packet survives a JSON round trip, as it does through localStorage", () => {

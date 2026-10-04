@@ -132,7 +132,7 @@ export type Facility = {
   lon: number;
   level: "health_post" | "health_centre" | "district_hospital";
   services: CareNeed[];
-  // e.g. "healthsites.io" or "synthetic demo data"
+  // e.g. "Maina et al., Scientific Data (2019)..."
   source: string;
 };
 

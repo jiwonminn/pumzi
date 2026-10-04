@@ -20,7 +20,7 @@ This tool supports referral. It is not a diagnosis.
 
 [Handoff — this layer] Land on the result:
 
-"Urgent referral recommended. Reason: not able to drink or breastfeed. Destination: District Clinic B. Action: please go to the recommended facility."
+"Urgent referral recommended. Reason: not able to drink or breastfeed. Destination: Good Samaritan ACK Medical Clinic. The list does not say it offers emergency care for children. Action: please go to the recommended facility."
 
 Read the Swahili line to the caregiver. Say it is a fixed draft, checked by a speaker, not text the model wrote.
 

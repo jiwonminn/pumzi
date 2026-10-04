@@ -19,11 +19,11 @@
     "notes": []
   },
   "facility": {
-    "facility_id": "fac-003",
-    "name": "District Clinic B",
-    "matched_services": ["pediatric_emergency", "iv_rehydration"],
-    "missing_services": [],
-    "distance_km": 7.4,
-    "why": "Closest facility in the offline list that offers everything needed (7.4 km)."
+    "facility_id": "maina-001",
+    "name": "Good Samaritan ACK Medical Clinic",
+    "matched_services": [],
+    "missing_services": ["pediatric_emergency"],
+    "distance_km": 0.1,
+    "why": "No facility in the offline list offers everything needed. This one is closest among those missing the fewest services (missing: Emergency care for children; 0.1 km). Confirm before travelling if possible."
   }
 }

@@ -24,13 +24,14 @@ describe("result screen", () => {
   it("shows the contract example", () => {
     expect(model.title).toBe("Urgent referral recommended");
     expect(model.reasons).toEqual(["Not able to drink or breastfeed"]);
-    expect(model.destination).toBe("District Clinic B");
+    expect(model.destination).toBe("Good Samaritan ACK Medical Clinic");
     expect(model.action).toBe("Please go to the recommended facility.");
-    expect(model.facilityWhy).toContain("7.4 km");
+    expect(model.facilityWhy).toContain("0.1 km");
+    expect(model.facilityWhy).toContain("Emergency care for children");
     expect(model.citations[0]?.pdf_page).toBe(5);
     expect(model.passport.passport_id).toBe("CP-1042");
     expect(model.caregiverLine).toContain("Hawezi kunywa");
-    expect(model.caregiverLine).toContain("District Clinic B");
+    expect(model.caregiverLine).toContain("Good Samaritan ACK Medical Clinic");
   });
 
   it("keeps the passport to the six contract fields", () => {
@@ -84,7 +85,7 @@ describe("handoff", () => {
       timestamp: "2026-10-03T19:00:00Z",
       language: "sw",
       decision: "urgent_referral",
-      facility: "District Clinic B",
+      facility: "Good Samaritan ACK Medical Clinic",
       reason: ["cannot_drink"],
       symptoms: { fever: true },
       pin: "1234",

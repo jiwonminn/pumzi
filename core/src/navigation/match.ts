@@ -1,6 +1,7 @@
 // Picks the closest facility that can actually provide the care needed, not just the nearest one.
 
 import type { CareNeed, Facility, FacilityRecommendation } from "../types";
+import { careNeedList } from "./care-labels";
 
 export type Point = { lat: number; lon: number };
 
@@ -59,7 +60,7 @@ export function recommendFacility(need: CareNeed[], from: Point, facilities: Fac
   } else {
     best.why =
       `No facility in the offline list offers everything needed. This one is closest among those missing the fewest ` +
-      `services (missing: ${best.missing_services.join(", ")}; ${best.distance_km} km). Confirm before travelling if possible.`;
+      `services (missing: ${careNeedList(best.missing_services)}; ${best.distance_km} km). Confirm before travelling if possible.`;
   }
 
   const alternatives = ranked.slice(1, 3).map((r) => ({
@@ -67,7 +68,7 @@ export function recommendFacility(need: CareNeed[], from: Point, facilities: Fac
     why:
       r.missing_services.length === 0
         ? `Also offers everything needed (${r.distance_km} km).`
-        : `Missing: ${r.missing_services.join(", ")} (${r.distance_km} km).`,
+        : `Missing: ${careNeedList(r.missing_services)} (${r.distance_km} km).`,
   }));
 
   return { best, alternatives };

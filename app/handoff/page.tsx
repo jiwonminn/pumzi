@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { FacilityMap } from "@/components/FacilityMap";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import "../../src/styles.css";
 
 export default function Handoff() {
@@ -14,13 +17,14 @@ export default function Handoff() {
 
   return (
     <>
-      <nav className="w-full px-5 pt-4 sm:px-8">
+      <nav className="w-full px-5 pt-3">
         {/* A full page load on purpose: the handoff reads the saved decision once, when it starts. */}
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/" className="text-sm font-semibold text-teal-800 underline-offset-4 hover:underline">
-          ← New case
+        <a href="/" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+          New case
         </a>
       </nav>
+      <FacilityMap />
       <div id="app" />
     </>
   );

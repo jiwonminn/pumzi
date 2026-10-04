@@ -7,6 +7,11 @@ import { decide } from "@/core/src/pipeline";
 import { IMCI_PROTOCOL } from "@/core/src/rules/who-imci";
 import type { Decision, StructuredCase } from "@/core/src/types";
 import { readDescription, type Reading } from "@/lib/intake";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { CaseReview } from "./CaseReview";
 import { FollowUpQuestions, type Answer } from "./FollowUpQuestions";
 
@@ -17,8 +22,7 @@ type Stage =
   | { name: "review"; id: number; reading: Reading; confirmed?: StructuredCase }
   | { name: "questions"; id: number; reading: Reading; confirmed: StructuredCase; current: StructuredCase; decision: Decision };
 
-const inputClass =
-  "w-full rounded-xl border border-slate-300 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10";
+const fieldClass = "h-11 text-base md:text-base";
 
 export function IntakeForm() {
   const [language, setLanguage] = useState<Language>("en");
@@ -98,100 +102,88 @@ export function IntakeForm() {
 
   return (
     <div className="space-y-6">
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7"
-      >
-        <div className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-teal-600">Step 1</p>
-            <h2 className="text-xl font-bold text-slate-900">Start a new intake</h2>
-            <p className="mt-1 text-sm text-slate-500">Capture the caregiver&apos;s description in their own words.</p>
-          </div>
-          <span className="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500 sm:inline-flex">Offline ready</span>
-        </div>
-
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_200px]">
-          <label className="block">
-            <span className="mb-2 block text-sm font-semibold text-slate-700">Describe the child&apos;s symptoms</span>
-            <textarea
-              required
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={7}
-              placeholder="My child is 2 years old, has had a fever since yesterday, and cannot drink."
-              className="w-full resize-y rounded-xl border border-slate-300 bg-white px-4 py-3 text-base leading-6 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-            />
-            {language === "sw" && translation && (
-              <div className="mt-3">
-                <div className="rounded-xl border border-teal-100 bg-teal-50/60 p-4">
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">English Translation</p>
-                  <p className="mt-2 text-base leading-7 text-slate-800">{translation}</p>
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <CardHeader>
+            <CardTitle>What the caregiver said</CardTitle>
+            <CardDescription>In their own words. Age is required.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-5">
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                required
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                rows={6}
+                placeholder="My child is 2 years old, has had a fever since yesterday, and cannot drink."
+                className="min-h-32 text-base md:text-base"
+              />
+              {language === "sw" && translation && (
+                <div className="rounded-lg border border-border bg-muted px-3 py-2">
+                  <p className="text-sm text-muted-foreground">English</p>
+                  <p className="mt-1 text-base leading-6">{translation}</p>
                 </div>
+              )}
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <fieldset className="grid gap-2">
+                <legend className="text-sm font-medium">Age</legend>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="grid gap-1">
+                    <Label htmlFor="years" className="text-muted-foreground">Years</Label>
+                    <Input
+                      id="years"
+                      min="0"
+                      max="17"
+                      type="number"
+                      inputMode="numeric"
+                      value={years}
+                      onChange={(event) => setYears(event.target.value)}
+                      placeholder="2"
+                      className={fieldClass}
+                    />
+                  </div>
+                  <div className="grid gap-1">
+                    <Label htmlFor="months" className="text-muted-foreground">Months</Label>
+                    <Input
+                      id="months"
+                      min="0"
+                      max="11"
+                      type="number"
+                      inputMode="numeric"
+                      value={months}
+                      onChange={(event) => setMonths(event.target.value)}
+                      placeholder="0"
+                      className={fieldClass}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Under 1 year: use months.</p>
+              </fieldset>
+              <div className="grid gap-2">
+                <Label htmlFor="language">Language</Label>
+                <select
+                  id="language"
+                  value={language}
+                  onChange={(event) => setLanguage(event.target.value as Language)}
+                  className="h-11 w-full rounded-lg border border-input bg-transparent px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <option value="en">English</option>
+                  <option value="sw">Swahili</option>
+                </select>
               </div>
-            )}
-          </label>
-          <div className="space-y-5">
-            <fieldset>
-              <legend className="mb-2 block text-sm font-semibold text-slate-700">Patient age</legend>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="relative block">
-                  <input
-                    min="0"
-                    max="17"
-                    type="number"
-                    inputMode="numeric"
-                    aria-label="Years"
-                    value={years}
-                    onChange={(event) => setYears(event.target.value)}
-                    placeholder="2"
-                    className={`${inputClass} pr-10`}
-                  />
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">yrs</span>
-                </label>
-                <label className="relative block">
-                  <input
-                    min="0"
-                    max="11"
-                    type="number"
-                    inputMode="numeric"
-                    aria-label="Months"
-                    value={months}
-                    onChange={(event) => setMonths(event.target.value)}
-                    placeholder="0"
-                    className={`${inputClass} pr-10`}
-                  />
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">mo</span>
-                </label>
-              </div>
-              <p className="mt-1 text-xs text-slate-500">Under 1 year: use months.</p>
-            </fieldset>
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">Description language</span>
-              <select
-                value={language}
-                onChange={(event) => setLanguage(event.target.value as Language)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-              >
-                <option value="en">English</option>
-                <option value="sw">Swahili</option>
-              </select>
-            </label>
-          </div>
-        </div>
-
-        <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-end">
-          {error && <p role="alert" className="text-sm font-medium text-red-700 sm:mr-auto">{error}</p>}
-          <button
-            type="submit"
-            disabled={processing}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-wait disabled:bg-teal-500 sm:w-auto"
-          >
-            {processing && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
-            {processing ? "Processing locally..." : "Analyze Symptoms"}
-          </button>
-        </div>
-      </form>
+            </div>
+            <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
+              {error && <p role="alert" className="text-sm text-destructive sm:mr-auto">{error}</p>}
+              <Button type="submit" disabled={processing} className="h-11 px-4 sm:w-auto">
+                {processing ? "Reading…" : "Read the description"}
+              </Button>
+            </div>
+          </CardContent>
+        </form>
+      </Card>
 
       {stage.name === "review" && (
         <CaseReview
@@ -204,15 +196,16 @@ export function IntakeForm() {
 
       {stage.name === "questions" && (
         <>
-          <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-sm">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3 text-sm">
             <span>Signs confirmed by the health worker.</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setStage({ name: "review", id: stage.id, reading: stage.reading, confirmed: stage.confirmed })}
-              className="font-semibold text-teal-700 underline-offset-4 hover:underline"
             >
               Edit
-            </button>
+            </Button>
           </div>
           <FollowUpQuestions
             key={stage.decision.follow_up_questions.map((q) => q.field).join()}
