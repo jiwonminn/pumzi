@@ -1,48 +1,98 @@
 "use client";
 
-import { useState } from "react";
-import type { ClinicalFactors } from "@/lib/clinicalFactors";
-import { processPatient } from "@/lib/api/processPatient";
-import type { PatientCase } from "@/lib/types";
-import { ClinicalFactorsCard } from "./ClinicalFactorsCard";
+import { useRef, useState } from "react";
+import { ageDaysFrom, applyAnswers } from "@/core/src/case/answers";
+import { DEMO_FACILITIES, DEMO_ORIGIN } from "@/core/src/navigation/demo-facilities";
+import { decide } from "@/core/src/pipeline";
+import { IMCI_PROTOCOL } from "@/core/src/rules/who-imci";
+import type { Decision, StructuredCase } from "@/core/src/types";
+import { readDescription, type Reading } from "@/lib/intake";
+import { CaseReview } from "./CaseReview";
+import { FollowUpQuestions, type Answer } from "./FollowUpQuestions";
+
+type Language = "en" | "sw";
+
+type Stage =
+  | { name: "describe" }
+  | { name: "review"; id: number; reading: Reading; confirmed?: StructuredCase }
+  | { name: "questions"; id: number; reading: Reading; confirmed: StructuredCase; current: StructuredCase; decision: Decision };
+
+const inputClass =
+  "w-full rounded-xl border border-slate-300 px-4 py-3 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10";
 
 export function IntakeForm() {
-  const [language, setLanguage] = useState<PatientCase["language"]>("en");
-  const [age, setAge] = useState("");
+  const [language, setLanguage] = useState<Language>("en");
+  const [years, setYears] = useState("");
+  const [months, setMonths] = useState("");
   const [description, setDescription] = useState("");
-  const [translation, setTranslation] = useState("");
-  const [clinicalFactors, setClinicalFactors] = useState<ClinicalFactors | null>(null);
-  const [processStatus, setProcessStatus] = useState<"idle" | "processing" | "complete" | "failed">("idle");
-  const [processError, setProcessError] = useState("");
+  const [stage, setStage] = useState<Stage>({ name: "describe" });
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
+  // Each new reading gets a fresh review, so answers from the last one don't carry over.
+  const readings = useRef(0);
+
+  const translation = stage.name === "describe" ? null : stage.reading.translation;
+
+  function ageDays(): number | null {
+    if (!years.trim() && !months.trim()) return null;
+    const y = Number(years || 0);
+    const m = Number(months || 0);
+    if (!Number.isFinite(y) || !Number.isFinite(m) || y < 0 || m < 0) return null;
+    return ageDaysFrom(y, m);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await handleProcess();
-  }
-
-  async function handleProcess() {
     const text = description.trim();
-    if (!text) {
+    const age = ageDays();
+    if (!text) return;
+    if (age === null) {
+      setError("Enter the child's age in years, months or both.");
       return;
     }
 
-    setProcessStatus("processing");
-    setProcessError("");
-    setTranslation("");
-    setClinicalFactors(null);
-
+    setProcessing(true);
+    setError("");
+    setStage({ name: "describe" });
     try {
-      const result = await processPatient(text, language);
-      setTranslation(result.translated_text ?? "");
-      setClinicalFactors(result.clinical_factors);
-      setProcessStatus("complete");
-    } catch (error) {
-      setProcessStatus("failed");
-      setProcessError(
-        error instanceof Error
-          ? error.message
-          : "Local AI service failed to process this input.",
-      );
+      const reading = await readDescription(text, language, age);
+      readings.current += 1;
+      setStage({ name: "review", id: readings.current, reading });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not read the description.");
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  // Runs the WHO rules. Follow-up questions come back here; any other result goes to the handoff.
+  function assess(id: number, reading: Reading, confirmed: StructuredCase, current: StructuredCase) {
+    const result = decide(current, IMCI_PROTOCOL, DEMO_FACILITIES, DEMO_ORIGIN);
+    if (!result.ok) {
+      setError(result.errors.join(" "));
+      return;
+    }
+    setError("");
+    const { decision } = result.packet;
+    if (decision.decision === "need_more_info") {
+      setStage({ name: "questions", id, reading, confirmed, current: result.case, decision });
+      return;
+    }
+    try {
+      localStorage.setItem("pumzi.decision", JSON.stringify(result.packet));
+    } catch {
+      setError("Could not save the result on this device, so the handoff can't open it.");
+      return;
+    }
+    window.location.assign("/handoff");
+  }
+
+  function answer(answers: Answer[]) {
+    if (stage.name !== "questions") return;
+    try {
+      assess(stage.id, stage.reading, stage.confirmed, applyAnswers(stage.current, answers));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not record that answer.");
     }
   }
 
@@ -61,7 +111,7 @@ export function IntakeForm() {
           <span className="hidden rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-500 sm:inline-flex">Offline ready</span>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_180px]">
+        <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_200px]">
           <label className="block">
             <span className="mb-2 block text-sm font-semibold text-slate-700">Describe the child&apos;s symptoms</span>
             <textarea
@@ -80,41 +130,47 @@ export function IntakeForm() {
                 </div>
               </div>
             )}
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={handleProcess}
-                disabled={!description.trim() || processStatus === "processing"}
-                className="rounded-xl border border-indigo-700 bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-800 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-400"
-              >
-                {processStatus === "processing" ? "Processing locally..." : "Process Locally"}
-              </button>
-              {processStatus === "complete" && <p className="mt-2 text-sm font-medium text-emerald-700">Processing complete</p>}
-              {processStatus === "failed" && <p role="alert" className="mt-2 text-sm font-medium text-red-700">{processError}</p>}
-            </div>
           </label>
           <div className="space-y-5">
-            <label className="block">
-              <span className="mb-2 block text-sm font-semibold text-slate-700">Patient age</span>
-              <div className="relative">
-                <input
-                  required
-                  min="0"
-                  max="18"
-                  type="number"
-                  value={age}
-                  onChange={(event) => setAge(event.target.value)}
-                  placeholder="2"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3 pr-16 text-base text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
-                />
-                <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-slate-400">years</span>
+            <fieldset>
+              <legend className="mb-2 block text-sm font-semibold text-slate-700">Patient age</legend>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="relative block">
+                  <input
+                    min="0"
+                    max="17"
+                    type="number"
+                    inputMode="numeric"
+                    aria-label="Years"
+                    value={years}
+                    onChange={(event) => setYears(event.target.value)}
+                    placeholder="2"
+                    className={`${inputClass} pr-10`}
+                  />
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">yrs</span>
+                </label>
+                <label className="relative block">
+                  <input
+                    min="0"
+                    max="11"
+                    type="number"
+                    inputMode="numeric"
+                    aria-label="Months"
+                    value={months}
+                    onChange={(event) => setMonths(event.target.value)}
+                    placeholder="0"
+                    className={`${inputClass} pr-10`}
+                  />
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-slate-400">mo</span>
+                </label>
               </div>
-            </label>
+              <p className="mt-1 text-xs text-slate-500">Under 1 year: use months.</p>
+            </fieldset>
             <label className="block">
               <span className="mb-2 block text-sm font-semibold text-slate-700">Description language</span>
               <select
                 value={language}
-                onChange={(event) => setLanguage(event.target.value as PatientCase["language"])}
+                onChange={(event) => setLanguage(event.target.value as Language)}
                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10"
               >
                 <option value="en">English</option>
@@ -124,19 +180,47 @@ export function IntakeForm() {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end border-t border-slate-100 pt-5">
+        <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-end">
+          {error && <p role="alert" className="text-sm font-medium text-red-700 sm:mr-auto">{error}</p>}
           <button
             type="submit"
-          disabled={processStatus === "processing"}
+            disabled={processing}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-teal-800 disabled:cursor-wait disabled:bg-teal-500 sm:w-auto"
           >
-            {processStatus === "processing" && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
-            {processStatus === "processing" ? "Processing locally..." : "Analyze Symptoms"}
+            {processing && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
+            {processing ? "Processing locally..." : "Analyze Symptoms"}
           </button>
         </div>
       </form>
 
-      {clinicalFactors && <ClinicalFactorsCard factors={clinicalFactors} />}
+      {stage.name === "review" && (
+        <CaseReview
+          key={stage.id}
+          reading={stage.reading}
+          confirmed={stage.confirmed}
+          onConfirm={(confirmed) => assess(stage.id, stage.reading, confirmed, confirmed)}
+        />
+      )}
+
+      {stage.name === "questions" && (
+        <>
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-600 shadow-sm">
+            <span>Signs confirmed by the health worker.</span>
+            <button
+              type="button"
+              onClick={() => setStage({ name: "review", id: stage.id, reading: stage.reading, confirmed: stage.confirmed })}
+              className="font-semibold text-teal-700 underline-offset-4 hover:underline"
+            >
+              Edit
+            </button>
+          </div>
+          <FollowUpQuestions
+            key={stage.decision.follow_up_questions.map((q) => q.field).join()}
+            decision={stage.decision}
+            onSubmit={answer}
+          />
+        </>
+      )}
     </div>
   );
 }
