@@ -110,6 +110,6 @@ test("output always passes the contract check and goes straight into decide()", 
   const r = decide(en("My child has a fever and cannot drink anything.", { ageDays: 730 }), IMCI_PROTOCOL, DEMO_FACILITIES, DEMO_ORIGIN);
   assert.equal(r.ok, true);
   assert.equal(r.packet.decision.decision, "urgent_referral");
-  assert.equal(r.packet.facility.name, "Good Samaritan ACK Medical Clinic");
-  assert.deepEqual(r.packet.facility.missing_services, ["pediatric_emergency"]);
+  assert.equal(r.packet.facility.name, "Nyeri Provincial General Hospital");
+  assert.deepEqual(r.packet.facility.missing_services, []);
 });
