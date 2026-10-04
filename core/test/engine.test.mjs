@@ -242,6 +242,10 @@ test("a case with no confidence field counts as not confident", () => {
   assert.equal(evaluate(c, IMCI_PROTOCOL).decision, "safe_fallback");
 });
 
+test("the drinking question is asked so that yes means the danger sign is there", () => {
+  assert.match(IMCI_PROTOCOL.questions.cannot_drink, /not able to drink/);
+});
+
 test("same case, same answer", () => {
   const c = { symptoms: { diarrhoea: true, ...NO_DEHYDRATION_SIGNS, sunken_eyes: true, drinks_eagerly: true } };
   assert.deepEqual(run(c), run(c));

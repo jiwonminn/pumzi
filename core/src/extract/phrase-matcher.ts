@@ -89,7 +89,7 @@ const SYMPTOM_PATTERNS: Partial<Record<SymptomKey, Patterns>> = {
   },
 };
 
-const DANGER_SIGNS: SymptomKey[] = ["cannot_drink", "vomiting_everything", "convulsions", "lethargy"];
+export const DANGER_SIGNS: SymptomKey[] = ["cannot_drink", "vomiting_everything", "convulsions", "lethargy"];
 
 // Negation has to come just before the phrase, inside the same clause.
 const NEGATION_BEFORE = /\b(no|not|never|without|denies|doesn't have|does not have|hasn't had|has not had|hasn't|has not|isn't|is not|hana|hakuna|bila)\b(\s+\w+){0,3}\s*$/;
